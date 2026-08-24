@@ -1,0 +1,5 @@
+# Created at 2026-08-24T16:18:24.425
+Boot Manifest-JAR contains absolute paths in classpath 'D:\HARIHARAN P\000_JAVA FULL STACK - Final Year Main_Projects - 2026_2027\007_PlantPal - A Personal Plant Care, Watering Schedule and Growth Monitoring Platform\target\test-classes'
+Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+'other' has different root
+
