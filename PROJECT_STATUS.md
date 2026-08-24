@@ -1,25 +1,26 @@
 # PROJECT_STATUS.md
 ## PlantPal - Personal Plant Care, Watering Schedule and Growth Monitoring Platform
-## Version 4 — Milestone 1 Completed
+## Version 5 — Milestone 1 Security Cleanup Completed
 
 ---
 
 ## Current Phase
 
-Milestone 1 (Project Setup) COMPLETE. Awaiting user approval to proceed to Milestone 2 (Authentication).
-Status: MILESTONE 1 VERIFIED AND COMPLETED
+Milestone 1 (Project Setup & Security Cleanup) COMPLETE.
+Status: MILESTONE 1 VERIFIED AND SECURED — Awaiting Approval for Milestone 2
 Last Updated: 2026-08-24
 
 ---
 
-## Repository & Project State
+## Repository & Security State
 
 - Greenfield project initialized with Git.
 - Spring Boot 3.2.5 application skeleton configured with Java 17/21 LTS.
-- MySQL 8.x connection established (plantpal_db).
+- MySQL 8.x connection established via environment variable (`DB_PASSWORD`).
+- No plaintext credentials stored anywhere in source, properties, or documentation.
 - Spring Security 6 session-based foundation with CSRF protection enabled.
-- All initial unit & integration tests passing (mvn clean test 100% success).
-- Live server verified on port 8080 (/api/health and / returning 200 OK).
+- All unit & integration tests passing (`mvn clean test` 100% success).
+- Live server verified on port 8080 (`/api/health` and `/` returning 200 OK).
 
 ---
 
@@ -36,15 +37,17 @@ Last Updated: 2026-08-24
 | Phase 5: REST API Design (27 endpoints)        | DONE   | 2026-08-24 |
 | Approval Gate 2 (All 12 corrections verified)  | APPROVED | 2026-08-24 |
 | **Milestone 1: Project Setup & Health Check**  | **COMPLETED & VERIFIED** | 2026-08-24 |
+| **Security Cleanup: DB Credential via Env Var**| **COMPLETED & VERIFIED** | 2026-08-24 |
 
 ---
 
-## Milestone 1 Verification Summary
+## Security Cleanup Summary
 
-1. Maven build & test (mvn clean test): **SUCCESS (3 tests passed, 0 failures)**
-2. Application startup: **SUCCESS (Tomcat on port 8080, HikariCP pool connected to plantpal_db)**
-3. Live HTTP Endpoint Test (/api/health): **SUCCESS (HTTP 200 OK, status: UP)**
-4. Static Resource Test (/index.html): **SUCCESS (HTTP 200 OK)**
+1. Plaintext database password completely removed from `application.properties`.
+2. `spring.datasource.password` configured to dynamically load from environment variable `${DB_PASSWORD}`.
+3. Entire repository scanned — 0 occurrences of hardcoded password in tracked files.
+4. Clean test verification (`mvn clean test` with `DB_PASSWORD`): **3 tests passed, 0 failures**.
+5. Live server test with environment variable: **`/api/health` returned 200 OK (status: UP)**.
 
 ---
 
@@ -68,4 +71,4 @@ Last Updated: 2026-08-24
 
 ## Known Issues / Blockers
 
-None. Clean build, database connection operational, port 8080 active.
+None.
