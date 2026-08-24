@@ -1,5 +1,6 @@
 ﻿# DECISIONS.md
 ## PlantPal - Architecture and Design Decisions
+## Version 2 — Updated after Gate 2 Conditional Approval
 
 ---
 
@@ -8,192 +9,262 @@
 Reason: Student already knows MySQL. Free, runs locally, integrates natively with Spring Data JPA
 and Hibernate. No cost, no cloud dependency.
 
-Alternatives considered:
-- H2 (in-memory, not persistent across restarts)
-- PostgreSQL (student unfamiliar, no advantage here)
-- MongoDB (NoSQL not suitable for relational plant data)
-
+Alternatives considered: H2 (not persistent), PostgreSQL (unfamiliar), MongoDB (NoSQL misfit).
 Decision: MySQL on localhost.
 
 ---
 
 ## Decision 2: Monolithic Architecture
 
-Reason: Development laptop has only 4 GB RAM. Microservices would require running multiple JVM
-instances, Docker containers, service discovery, and message queues -- all beyond the hardware
-limit and the student skill level.
+Reason: 4 GB RAM laptop. Microservices require multiple JVM instances, Docker, service discovery
+— all beyond hardware and skill constraints.
 
-Alternatives considered:
-- Microservices (too complex, too heavy for 4 GB RAM)
-- Serverless (requires cloud)
-
-Decision: Single Spring Boot monolith running on one port (8080).
+Decision: Single Spring Boot monolith on port 8080.
 
 ---
 
 ## Decision 3: HTML + CSS + Bootstrap + JavaScript (No React)
 
-Reason: Student knows HTML, CSS, Bootstrap, and JavaScript. React requires Node.js tooling, npm,
-component lifecycle knowledge, and CORS configuration. For a CRUD plant care app, HTML pages
-with fetch() API calls to REST endpoints is sufficient and beginner-understandable.
+Reason: Student knows HTML, CSS, Bootstrap, JavaScript. React requires npm tooling, component
+lifecycle, and CORS configuration. For a CRUD plant care app, HTML + fetch() is sufficient.
 
-Alternatives considered:
-- React (overkill, heavy tooling, npm dependency)
-- Angular (steep learning curve)
-- Thymeleaf templates (couples server and frontend tightly)
-- Vue.js (still requires npm tooling)
+Frontend stack is strictly:
+  HTML, CSS, Bootstrap 5, Vanilla JavaScript, fetch() API
+No bundlers. No state-management libraries. No frontend frameworks.
 
-Decision: Static HTML + Bootstrap + JavaScript using fetch() to call REST APIs.
+Decision: Static HTML served from Spring Boot + fetch() REST calls.
 
 ---
 
 ## Decision 4: Six Tables Only
 
-Reason: PlantPal data model is naturally represented by six entities. Adding more tables
-(notifications, tags, media) would add complexity without delivering core value.
+Tables: users, plant_categories, plants, care_schedules, watering_records, growth_records.
+No notification table. No audit table. No user-session table. No extra tables.
 
-Tables:
-1. users
-2. plant_categories
-3. plants
-4. care_schedules
-5. watering_records
-6. growth_records
-
-Decision: Six tables as the complete schema for MVP.
+Decision: Exactly six tables for the complete MVP schema.
 
 ---
 
 ## Decision 5: No External APIs
 
-Reason: Budget is Rs.0. The project must run with zero internet dependency. No plant database
-API, no weather API, no email API, no SMS API is needed.
-
-Decision: All data is user-entered. No external API calls of any kind.
+Budget: Rs.0. Zero internet dependency.
+Decision: All data user-entered. No external APIs of any kind.
 
 ---
 
 ## Decision 6: No AI or ML
 
-Reason: Out of scope for a beginner Java Full Stack project. The student does not have AI or ML
-knowledge. PlantPal is a care management platform, not a plant intelligence platform. Simple date
-arithmetic (lastWatered + interval = nextWatering) is the correct and sufficient implementation.
-
-Decision: Zero AI, ML, or prediction. Pure Java LocalDate arithmetic for watering schedule.
+PlantPal is a care management platform. Watering status is simple date arithmetic — no AI required.
+Decision: Zero AI/ML. Pure Java LocalDate arithmetic for watering schedule.
 
 ---
 
-## Decision 7: Session-Based Authentication (Spring Security)
+## Decision 7: Spring Security Session-Based Authentication with Custom JSON Login Endpoint
 
-Reason: JWT tokens require Base64 encoding, token signing keys, expiry logic, refresh tokens,
-and careful client-side storage -- all complex for a beginner. Spring Security session-based
-authentication is well-documented, works out of the box, and is easy to understand and explain
-in a viva.
+Reason: JWT requires token signing, expiry, refresh tokens, and client storage — complex for a
+beginner. OAuth2 requires an external identity provider. Spring Security session auth is
+well-documented, works out of the box, and is easy to explain in a viva.
 
-Alternatives considered:
-- JWT (complex for beginner)
-- OAuth2 (requires external identity provider)
-- Manual session handling (error-prone)
+Technically accurate description:
+  "Spring Security session-based authentication with a custom JSON login endpoint"
 
-Decision: Spring Security with HTTP session. Username/password login. BCrypt password hashing.
+This is NOT classic HTML form-login. PlantPal uses:
+  POST /api/auth/login   (JSON body: { email, password })
+  -> AuthenticationManager authenticates
+  -> HttpSession created and bound to SecurityContext
+  -> JSESSIONID cookie returned to browser
+
+Decision: Spring Security HttpSession + BCrypt password hashing. No JWT. No OAuth.
 
 ---
 
-## Decision 8: Simple Date Arithmetic for Watering Status
+## Decision 8: Watering Status Computed at Read Time (Not Stored)
 
-Reason: nextWateringDate = lastWateredDate + wateringIntervalDays is a single line of Java code.
-No scheduling algorithm, no cron job, no background thread, no caching is needed. Status is
-computed on the fly at read time.
+nextWateringDate = lastWateredDate.plusDays(wateringIntervalDays)
 
-Decision: Pure Java LocalDate arithmetic. Computed at read time. No stored calculated fields.
-No background jobs.
+wateringStatus:
+  if lastWateredDate == null         -> NOT_SET
+  if nextWateringDate.isBefore(today)-> WATER_OVERDUE
+  if nextWateringDate.isEqual(today) -> WATER_TODAY
+  else                               -> WATER_UPCOMING
+
+Decision: Computed in Java service layer at read time. No stored computed fields. No cron jobs.
 
 ---
 
 ## Decision 9: No Docker
 
-Reason: 4 GB RAM. Docker Desktop on Windows consumes 1-2 GB RAM before any container runs.
-The project must start and run with just Java + MySQL.
-
-Decision: No Docker. Direct Maven build: mvn spring-boot:run
+4 GB RAM. Docker Desktop uses 1-2 GB before any container starts.
+Decision: No Docker. Run with: mvn spring-boot:run
 
 ---
 
 ## Decision 10: No Separate Notification Table for MVP
 
-Reason: Reminders are shown on the dashboard by querying plants whose nextWateringDate is <= today.
-This is a simple database query. A separate notification table adds schema complexity without value.
-
-Decision: Dashboard computes overdue and today-due plants at query time. No notification table for MVP.
+Overdue/today alerts are computed from watering data at dashboard query time.
+Decision: No notification table for MVP. Dashboard query computes alerts on demand.
 
 ---
 
-## Decision 11: No Auto-Login After Registration
+## Decision 11: No Auto-Login After Registration (Gate 1 Correction)
 
-Reason: Approved correction from Approval Gate 1. Registration should be a separate step from
-authentication. After registering, the user must explicitly log in. This is the standard pattern
-for web applications and avoids complexity in session creation during the registration flow.
+Registration and authentication are two separate flows.
+  POST /api/auth/register -> 201 -> frontend shows success -> user navigates to /login
+  POST /api/auth/login    -> 200 -> session established -> /dashboard
 
-Flow: POST /api/auth/register -> 201 Created -> frontend shows success -> user goes to /login.
-
-Decision: Registration and login are two separate, independent flows.
+Decision: Register does not create a session. User must log in separately.
 
 ---
 
-## Decision 12: System Font Stack (No Google Fonts)
+## Decision 12: System Font Stack Only (Gate 1 Correction)
 
-Reason: Approved correction from Approval Gate 1. Loading Google Fonts at runtime creates an
-external network dependency. The application must work fully offline on localhost. System fonts
-are always available and render acceptably well for a professional UI.
+No Google Fonts. No external font CDN. Application must run fully offline on localhost.
 
-System font stack:
-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+Font stack used in plantpal.css:
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
-This renders as:
-- Segoe UI on Windows
-- San Francisco on macOS/iOS
-- Roboto on Android/Chrome OS
-- Helvetica Neue or Arial as fallback
+Renders as:
+  Windows:   Segoe UI
+  macOS/iOS: San Francisco
+  Android:   Roboto
+  Fallback:  Helvetica Neue, Arial
 
-Decision: Use system font stack only. No Google Fonts or any external font CDN.
+Decision: System font stack. No external font dependency.
 
 ---
 
-## Decision 13: Simplified Add Plant Form
+## Decision 13: lastWateredDate is OPTIONAL (Gate 2 Correction)
 
-Reason: Approved correction from Approval Gate 1. Keep the Add Plant form focused on the core
-fields. Sunlight Needs and Fertilizing Interval remain as optional fields to avoid complicating
-the implementation, but they must not add unnecessary complexity.
+A newly added plant may never have been watered. Forcing lastWateredDate breaks the real workflow.
 
-Core fields (required): Plant Name, Category, Status, Watering Interval, Last Watered Date
-Optional fields: Location, Description, Sunlight Needs, Fertilizing Interval
+Rule (authoritative across all documents):
+  lastWateredDate = NULL   -> wateringStatus = NOT_SET, nextWateringDate = null
+  lastWateredDate = a date -> wateringStatus computed via date arithmetic
 
-Decision: All optional fields map to nullable columns in care_schedules. No changes to schema.
+Database: care_schedules.last_watered_date is a nullable DATE column.
+API: lastWateredDate in POST /api/plants request body is optional.
+UI: Last Watered Date field in Add Plant form is optional (not marked required).
 
----
-
-## Decision 14: Ownership Check Returns 404 (Not 403)
-
-Reason: Returning 403 Forbidden when a user tries to access another user's plant reveals that
-the plant ID exists in the system. Returning 404 Not Found is safer and gives no information
-to a potential attacker about which IDs are valid.
-
-Decision: All plant/care/watering/growth endpoints return 404 if plant does not exist OR if
-plant belongs to a different user.
+Decision: lastWateredDate is NULL-allowed. NOT_SET is a valid wateringStatus.
 
 ---
 
-## Decision 15: Watering Status Computed at Read Time
+## Decision 14: Ownership Check Returns 404 (Not 403) (Gate 2 Correction)
 
-Reason: Storing computed fields (next_watering_date, watering_status) creates a risk of stale
-data if the background update fails. Computing at read time ensures the status is always
-accurate with zero additional infrastructure.
+Returning 403 reveals that a plant ID exists in the system — an information disclosure risk.
+Returning 404 gives no information about whether the plant ID is valid.
 
-Java logic (single method in a utility/service class):
-  if (lastWateredDate == null) return "NOT_SET";
-  LocalDate next = lastWateredDate.plusDays(intervalDays);
-  if (next.isBefore(today)) return "WATER_OVERDUE";
-  if (next.isEqual(today))  return "WATER_TODAY";
-  return "WATER_UPCOMING";
+Rule: If plant.user_id != currentUser.id -> throw ResourceNotFoundException -> 404.
+Applied in: PlantService, CareService, WateringService, GrowthService.
 
-Decision: No stored computed fields. Status computed in Java service layer at read time.
+Decision: All ownership failures return 404, not 403.
+
+---
+
+## Decision 15: Admin Seed via DataInitializer (Java) — Not data.sql (Gate 2 Correction)
+
+data.sql cannot BCrypt a password — SQL files store plain text or pre-computed hashes,
+which is fragile and non-transparent. BCrypt requires Java runtime.
+
+DataInitializer.java (implements CommandLineRunner):
+  On startup:
+  1. Check if admin@plantpal.local exists in users table
+  2. If NO: create admin user with passwordEncoder.encode("Admin@123")
+  3. If YES: skip (idempotent — safe to run on every restart)
+  4. Seed plant_categories if table is empty
+
+Local development credentials (NOT for production):
+  Email:    admin@plantpal.local
+  Password: Admin@123
+
+Decision: BCrypt hashing via Java CommandLineRunner. No plain-text passwords anywhere.
+
+---
+
+## Decision 16: CSRF Protection Using CookieCsrfTokenRepository (Gate 2 Correction)
+
+CSRF attacks are real for session-cookie-based applications. Simply disabling CSRF without
+justification is not acceptable security practice.
+
+Chosen strategy: CookieCsrfTokenRepository.withHttpOnlyFalse()
+
+How it works:
+  1. Spring Security sets XSRF-TOKEN cookie (readable by JavaScript, HttpOnly=false).
+  2. Frontend JavaScript reads document.cookie for XSRF-TOKEN value.
+  3. Frontend includes X-XSRF-TOKEN header on every POST/PUT/PATCH/DELETE fetch() call.
+  4. Spring Security validates: X-XSRF-TOKEN header must match XSRF-TOKEN cookie value.
+  5. Cross-origin attackers cannot read XSRF-TOKEN (same-origin policy) -> request rejected.
+
+Exemptions (no session = no CSRF risk in the classical sense):
+  POST /api/auth/register
+  POST /api/auth/login
+
+All other state-changing endpoints (POST/PUT/PATCH/DELETE) require X-XSRF-TOKEN.
+
+SecurityConfig snippet:
+  http.csrf(csrf -> csrf
+      .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+      .ignoringRequestMatchers("/api/auth/register", "/api/auth/login")
+  );
+
+Decision: CSRF enabled with CookieCsrfTokenRepository. Not disabled.
+
+---
+
+## Decision 17: Admin User Management is Read-Only in MVP (Gate 2 Correction)
+
+Admin can VIEW users (name, email, role, plant count, registration date).
+Admin cannot EDIT or DELETE users in MVP.
+
+Justification: User editing/deletion adds significant complexity (cascading deletes, safety
+prompts, confirmation flows) without adding core MVP value. The project scope does not require it.
+
+Page title: "View Users" (not "Manage Users").
+Endpoint: GET /api/admin/users (read-only, no POST/PUT/DELETE on /api/admin/users).
+
+Decision: Admin user management = read-only overview for MVP.
+
+---
+
+## Decision 18: Category Seed List — No Location-Based Categories (Gate 2 Correction)
+
+"Indoor" and "Outdoor" are plant LOCATIONS, not plant TYPES. They are already captured by
+the plants.location ENUM column (INDOOR, OUTDOOR, BALCONY, TERRACE, GARDEN).
+
+Using them as categories would be semantically incorrect and confusing.
+
+Seed categories (8):
+  Herb, Succulent, Flowering, Vegetable, Tree, Shrub, Fern, Cactus
+
+Decision: 8 type-based seed categories. No location-based categories.
+
+---
+
+## Decision 19: Endpoint Count is 27 (Gate 2 Correction)
+
+Earlier documents inconsistently stated "26 endpoints" in some places and "27" in others.
+Correct count after recount: 27 endpoints.
+
+This is the single authoritative number in all documents.
+
+Auth (4): register, login, logout, me
+Categories (1): GET /api/categories
+Plants (6): list, detail, add, edit, delete, status-patch
+Care (2): get, update
+Watering (2): history, record
+Growth (2): history, record
+Dashboard (1): stats
+Profile (3): get, update, password
+Admin (6): users, categories-list, categories-add, categories-edit, categories-delete, stats
+
+Total: 4+1+6+2+2+2+1+3+6 = 27
+
+---
+
+## Decision 20: Simplified Add Plant Form (Gate 1 Correction — Documented in Decisions)
+
+Core required fields: Plant Name, Category, Status, Watering Interval
+Core optional fields: Location, Description, Last Watered Date (may be null)
+Additional optional: Sunlight Needs, Fertilizing Interval (stored in care_schedules)
+
+Decision: Simple form. No field is added without a real user need.
