@@ -3,6 +3,7 @@ package com.plantpal.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plantpal.dto.request.LoginRequest;
 import com.plantpal.dto.request.RegisterRequest;
+import com.plantpal.entity.User;
 import com.plantpal.enums.Role;
 import com.plantpal.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,10 +14,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -36,14 +37,24 @@ class AuthControllerTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    private static final String TEST_ADMIN_EMAIL = "admin.test@plantpal.local";
+    private static final String TEST_ADMIN_PASSWORD = "TestAdminPassword@123";
+
     @BeforeEach
     void setUp() {
-        // Clean non-admin users before tests
-        userRepository.findAll().forEach(user -> {
-            if (user.getRole() != Role.ADMIN) {
-                userRepository.delete(user);
-            }
-        });
+        userRepository.deleteAll();
+
+        // Seed dedicated test admin user for testing
+        User testAdmin = new User(
+                "Test Administrator",
+                TEST_ADMIN_EMAIL,
+                passwordEncoder.encode(TEST_ADMIN_PASSWORD),
+                Role.ADMIN
+        );
+        userRepository.save(testAdmin);
     }
 
     @Test
@@ -168,7 +179,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("FR-AUTH-03: Login with invalid password returns 401 Unauthorized")
     void testLogin_InvalidPassword() throws Exception {
-        LoginRequest loginRequest = new LoginRequest("admin@plantpal.local", "WrongPassword!");
+        LoginRequest loginRequest = new LoginRequest(TEST_ADMIN_EMAIL, "WrongPassword!");
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -185,24 +196,25 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("Admin Seed: Default admin can login with seeded credentials and has ROLE_ADMIN")
+    @DisplayName("Admin Seed & Login: Admin user can login and has ROLE_ADMIN")
     void testAdmin_LoginSuccess() throws Exception {
-        LoginRequest adminLogin = new LoginRequest("admin@plantpal.local", "Admin@123");
+        LoginRequest adminLogin = new LoginRequest(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(adminLogin)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("admin@plantpal.local"))
+                .andExpect(jsonPath("$.email").value(TEST_ADMIN_EMAIL))
                 .andExpect(jsonPath("$.role").value("ADMIN"))
-                .andExpect(jsonPath("$.fullName").value("System Administrator"));
+                .andExpect(jsonPath("$.fullName").value("Test Administrator"))
+                .andExpect(jsonPath("$.password").doesNotExist())
+                .andExpect(jsonPath("$.passwordHash").doesNotExist());
     }
 
     @Test
     @DisplayName("FR-AUTH-04: Logout invalidates session and subsequent /me returns 401")
     void testLogout_Success() throws Exception {
-        // Login as Admin
-        LoginRequest adminLogin = new LoginRequest("admin@plantpal.local", "Admin@123");
+        LoginRequest adminLogin = new LoginRequest(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
         MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(adminLogin)))

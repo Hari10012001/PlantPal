@@ -1,13 +1,13 @@
 # PROJECT_STATUS.md
 ## PlantPal - Personal Plant Care, Watering Schedule and Growth Monitoring Platform
-## Version 6 — Milestone 2 Completed
+## Version 7 — Milestone 2 Security Review & Admin Password Cleanup Completed
 
 ---
 
 ## Current Phase
 
-Milestone 2 (Authentication & User Management) COMPLETE.
-Status: MILESTONE 2 VERIFIED AND COMPLETED — Awaiting Approval for Milestone 3
+Milestone 2 (Authentication & User Management + Security Hardening) COMPLETE.
+Status: MILESTONE 2 VERIFIED AND SECURED — Awaiting Approval for Milestone 3
 Last Updated: 2026-08-24
 
 ---
@@ -17,9 +17,10 @@ Last Updated: 2026-08-24
 - Greenfield project initialized with Git.
 - Spring Boot 3.2.5 application skeleton configured with Java 17/21 LTS.
 - MySQL 8.x connection established via environment variable (`DB_PASSWORD`).
-- Spring Security 6 session-based authentication fully operational with CSRF protection (`CookieCsrfTokenRepository`).
+- Initial Admin password loaded via environment variable (`ADMIN_PASSWORD`). No hardcoded secrets anywhere in `src/main`.
+- Spring Security 6 session-based authentication fully operational with CSRF protection (`CookieCsrfTokenRepository` + `CsrfCookieFilter`).
 - Full authentication suite verified: User entity, Role enum, UserRepository, AuthService, CustomUserDetailsService, AuthController.
-- Default Admin account seeded idempotently (`admin@plantpal.local`).
+- Default Admin account seeded idempotently via `ADMIN_PASSWORD` env var (`admin@plantpal.local`).
 - All unit & integration tests passing (`mvn clean test` 100% success — 12 tests passed).
 - Live server verified on port 8080 (all 4 authentication endpoints tested and verified live).
 
@@ -40,35 +41,31 @@ Last Updated: 2026-08-24
 | **Milestone 1: Project Setup & Health Check**  | **COMPLETED & VERIFIED** | 2026-08-24 |
 | **Security Cleanup: DB Credential via Env Var**| **COMPLETED & VERIFIED** | 2026-08-24 |
 | **Milestone 2: Authentication & User Mgmt**    | **COMPLETED & VERIFIED** | 2026-08-24 |
+| **M2 Security Fix: Admin Password via Env Var**| **COMPLETED & VERIFIED** | 2026-08-24 |
 
 ---
 
-## Milestone 2 Verification Summary
+## Milestone 2 Security Fix Verification Summary
 
-1. **Unit & Integration Tests (`mvn clean test`):** **SUCCESS (12/12 tests passed, 0 failures, 0 errors)**
-   - `PlantPalApplicationTests.contextLoads`
-   - `HealthControllerTest.testHealthEndpointReturnsUp`
-   - `HealthControllerTest.testStaticRootReturnsOk`
-   - `AuthControllerTest.testRegister_Success`
-   - `AuthControllerTest.testRegister_PasswordMismatch`
-   - `AuthControllerTest.testRegister_DuplicateEmail`
-   - `AuthControllerTest.testRegister_ValidationErrors`
-   - `AuthControllerTest.testLogin_Success`
-   - `AuthControllerTest.testLogin_InvalidPassword`
-   - `AuthControllerTest.testGetMe_Unauthenticated`
-   - `AuthControllerTest.testAdmin_LoginSuccess`
-   - `AuthControllerTest.testLogout_Success`
-
-2. **Live REST API Verification (Port 8080):** **SUCCESS (9/9 live integration tests passed)**
-   - `POST /api/auth/register` (Success -> 201 Created)
-   - `POST /api/auth/register` (Password mismatch validation -> 400 Bad Request)
-   - `POST /api/auth/login` (Success -> 200 OK + UserResponse, no password exposed)
-   - `GET /api/auth/me` (Authenticated session -> 200 OK)
-   - `GET /api/auth/me` (Unauthenticated -> 401 Unauthorized)
-   - `POST /api/auth/login` (Admin login -> 200 OK with `role: ADMIN`)
-   - `POST /api/auth/login` (Invalid password -> 401 Unauthorized)
-   - `POST /api/auth/logout` (With `X-XSRF-TOKEN` header -> 200 OK + session invalidated)
-   - `GET /api/auth/me` (Post-logout -> 401 Unauthorized)
+1. **Hardcoded Admin Password Eradicated:**
+   - Removed `passwordEncoder.encode("Admin@123")` from `DataInitializer.java`.
+   - Admin seed password configured via `app.admin.password=${ADMIN_PASSWORD:}`.
+   - If `ADMIN_PASSWORD` is absent, seeding is skipped safely with a clear log warning.
+2. **Automated Tests (`mvn clean test`):**
+   - 12 tests passed, 0 failures, 0 errors.
+   - `AuthControllerTest` uses dedicated test credentials and verifies no password exposure.
+3. **Live Server Verification (Port 8080):**
+   - Register new user: 201 Created
+   - Register validation (mismatch): 400 Bad Request
+   - Login: 200 OK (UserResponse contains no password)
+   - GET `/api/auth/me` with session: 200 OK
+   - GET `/api/auth/me` without session: 401 Unauthorized
+   - Admin login via env var credential: 200 OK (`role: ADMIN`)
+   - Invalid login: 401 Unauthorized
+   - Logout with CSRF token (`X-XSRF-TOKEN`): 200 OK
+   - Post-logout `/me`: 401 Unauthorized
+4. **Credential Scan:**
+   - 0 hardcoded secrets found in `src/main`.
 
 ---
 

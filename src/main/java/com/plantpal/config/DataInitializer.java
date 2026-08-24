@@ -5,13 +5,14 @@ import com.plantpal.enums.Role;
 import com.plantpal.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
  * DataInitializer executes on application startup.
- * Seeds default admin credentials idempotently and ensures DB connectivity.
+ * Seeds default admin credentials idempotently from environment variable.
  */
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -20,6 +21,12 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.admin.email:admin@plantpal.local}")
+    private String adminEmail;
+
+    @Value("${app.admin.password:${ADMIN_PASSWORD:}}")
+    private String adminPassword;
 
     public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -31,17 +38,20 @@ public class DataInitializer implements CommandLineRunner {
         logger.info("==================================================");
         logger.info(" PlantPal Platform Initializing (Milestone 2)     ");
 
-        // Seed default Admin user idempotently
-        String adminEmail = "admin@plantpal.local";
+        // Seed default Admin user idempotently if not already present
         if (!userRepository.existsByEmail(adminEmail)) {
-            User admin = new User(
-                    "System Administrator",
-                    adminEmail,
-                    passwordEncoder.encode("Admin@123"),
-                    Role.ADMIN
-            );
-            userRepository.save(admin);
-            logger.info(" Default Admin Account Created: {}", adminEmail);
+            if (adminPassword != null && !adminPassword.isBlank()) {
+                User admin = new User(
+                        "System Administrator",
+                        adminEmail,
+                        passwordEncoder.encode(adminPassword.trim()),
+                        Role.ADMIN
+                );
+                userRepository.save(admin);
+                logger.info(" Default Admin Account Created: {}", adminEmail);
+            } else {
+                logger.warn(" ADMIN_PASSWORD environment variable is not set. Default Admin account creation skipped.");
+            }
         } else {
             logger.info(" Default Admin Account already present: {}", adminEmail);
         }
