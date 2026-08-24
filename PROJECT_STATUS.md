@@ -8,12 +8,9 @@
 | Item                   | Status                     | Notes                     |
 |------------------------|----------------------------|---------------------------|
 | Directory exists       | YES                        | Empty directory           |
-| Git initialized        | YES (just initialized)     | Fresh start               |
+| Git initialized        | YES                        | Fresh - initialized       |
 | Existing source code   | NONE                       | Greenfield project        |
-| Existing frontend      | NONE                       | Greenfield project        |
-| Existing backend       | NONE                       | Greenfield project        |
-| Existing DB config     | NONE                       | Will create from scratch  |
-| Existing documentation | NONE                       | Creating now              |
+| Existing documentation | CREATED                    | 5 planning docs created   |
 
 Conclusion: Completely fresh project. No risk of overwriting existing work.
 
@@ -21,8 +18,8 @@ Conclusion: Completely fresh project. No risk of overwriting existing work.
 
 ## Current Phase
 
-Phase 0 to Phase 2 (Analysis and UI/UX Design)
-Status: IN PLANNING - Awaiting Approval Gate 1
+Phase 3 to Phase 5 complete (Architecture, Database, API Design)
+Status: IN PLANNING - Awaiting Approval Gate 2
 Last Updated: 2026-08-24
 
 ---
@@ -33,17 +30,31 @@ Last Updated: 2026-08-24
 - Git repository initialized: DONE
 - PROJECT_STATUS.md: DONE
 - REQUIREMENTS.md: DONE
-- DECISIONS.md: DONE
-- UI/UX Design Plan: DONE (see implementation_plan.md in artifacts)
+- DECISIONS.md: DONE (updated with Approval Gate 1 corrections)
+- UI/UX Design Plan (Approval Gate 1): DONE + APPROVED
+- DATABASE_DESIGN.md: DONE
+- API_DOCUMENTATION.md: DONE
+- Architecture design: DONE
 
 ---
 
-## Pending Work (Blocked until Approval Gate 1)
+## Approval Gate 1 Corrections Applied
 
-- Phase 3 Architecture Design: BLOCKED
-- Phase 4 Database Design (DATABASE_DESIGN.md): BLOCKED
-- Phase 5 API Design (API_DOCUMENTATION.md): BLOCKED
-- APPROVAL GATE 2: BLOCKED
+1. Confirmed monolithic Spring Boot application
+2. Confirmed session-based authentication only (no JWT, no OAuth)
+3. Changed registration flow: Register -> Success -> Login -> Dashboard (no auto-login)
+4. Changed fonts: System font stack only (no Google Fonts)
+5. Simplified Add Plant form (core required + optional fields)
+6. Confirmed strict user ownership on all plant/care/watering/growth endpoints
+7. No new technology introduced
+8. Six-table database confirmed
+9. All design decisions documented in DECISIONS.md (11-15)
+
+---
+
+## Pending Work
+
+- APPROVAL GATE 2: WAITING for user
 - Milestone 1 Project Setup: BLOCKED
 - Milestone 2 Authentication: BLOCKED
 - Milestone 3 Plant Categories: BLOCKED
@@ -61,13 +72,13 @@ Last Updated: 2026-08-24
 
 ## Known Issues
 
-None. Greenfield project.
+None. Design phase complete.
 
 ---
 
 ## Next Milestone
 
-APPROVAL GATE 1 - User reviews UI/UX plan and approves to proceed.
+APPROVAL GATE 2 - User reviews architecture, database, and API design before implementation begins.
 
 ---
 
@@ -80,6 +91,7 @@ APPROVAL GATE 1 - User reviews UI/UX plan and approves to proceed.
 | Database     | MySQL                           | Student skill, free, local           |
 | Build Tool   | Maven                           | Standard Spring Boot tooling         |
 | Architecture | Monolith                        | 4 GB RAM constraint                  |
-| Auth         | Session-based (Spring Security) | Simple, no JWT complexity            |
+| Auth         | Session-based (Spring Security) | Simple, approved by Gate 1           |
+| Font         | System font stack               | No external dependency, approved G1  |
 | IDE          | IntelliJ IDEA Community         | Student choice                       |
 | Deployment   | localhost                       | Budget = Rs.0                        |
