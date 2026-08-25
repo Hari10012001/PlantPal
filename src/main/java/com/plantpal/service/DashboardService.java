@@ -13,9 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DashboardService {
@@ -35,66 +34,88 @@ public class DashboardService {
         long needsAttentionPlants = plantRepository.countByUserIdAndStatus(userId, PlantStatus.NEEDS_ATTENTION);
         long inactivePlants = plantRepository.countByUserIdAndStatus(userId, PlantStatus.INACTIVE);
 
-        List<Plant> plants = plantRepository.findByUserIdOrderByCreatedAtDesc(userId);
         LocalDate today = LocalDate.now();
         LocalDate cutoff = today.plusDays(7);
 
+        // 1. Bulk-load all care schedules for the user's plants in a single query (eliminates N+1)
+        List<CareSchedule> userSchedules = careScheduleRepository.findByUserIdWithPlantAndCategory(userId);
+        Map<Long, CareSchedule> scheduleByPlantId = userSchedules.stream()
+                .filter(cs -> cs.getPlant() != null)
+                .collect(Collectors.toMap(cs -> cs.getPlant().getId(), cs -> cs, (existing, replacement) -> existing));
+
         long waterTodayCount = 0;
         long overdueCount = 0;
-
-        List<RecentPlantResponse> recentPlants = new ArrayList<>();
         List<UpcomingCareResponse> upcomingCare = new ArrayList<>();
 
-        for (Plant plant : plants) {
-            CareSchedule schedule = careScheduleRepository.findByPlantId(plant.getId()).orElse(null);
+        for (CareSchedule schedule : userSchedules) {
+            LocalDate lastWateredDate = schedule.getLastWateredDate();
+            Integer interval = schedule.getWateringIntervalDays();
 
+            if (lastWateredDate != null && interval != null && interval > 0) {
+                LocalDate nextWateringDate = lastWateredDate.plusDays(interval);
+                WateringStatus status;
+
+                if (nextWateringDate.isBefore(today)) {
+                    status = WateringStatus.WATER_OVERDUE;
+                    overdueCount++;
+                } else if (nextWateringDate.isEqual(today)) {
+                    status = WateringStatus.WATER_TODAY;
+                    waterTodayCount++;
+                } else {
+                    status = WateringStatus.WATER_UPCOMING;
+                }
+
+                if (!nextWateringDate.isAfter(cutoff)) {
+                    upcomingCare.add(new UpcomingCareResponse(
+                            schedule.getPlant().getId(),
+                            schedule.getPlant().getName(),
+                            nextWateringDate,
+                            status
+                    ));
+                }
+            }
+        }
+
+        // Sort upcoming care chronologically ascending (overdue & today first, then by plant name)
+        upcomingCare.sort(Comparator.comparing(UpcomingCareResponse::getNextWateringDate)
+                .thenComparing(UpcomingCareResponse::getPlantName));
+
+        // 2. Database-level limit for top 5 recent plants (eliminates loading all plants for just 5)
+        List<Plant> top5Plants = plantRepository.findTop5ByUserIdOrderByCreatedAtDesc(userId);
+        List<RecentPlantResponse> recentPlants = new ArrayList<>();
+
+        for (Plant plant : top5Plants) {
+            CareSchedule schedule = scheduleByPlantId.get(plant.getId());
             WateringStatus wateringStatus = WateringStatus.NOT_SET;
             LocalDate nextWateringDate = null;
             LocalDate lastWateredDate = null;
 
             if (schedule != null) {
                 lastWateredDate = schedule.getLastWateredDate();
-                if (lastWateredDate != null && schedule.getWateringIntervalDays() != null && schedule.getWateringIntervalDays() > 0) {
-                    nextWateringDate = lastWateredDate.plusDays(schedule.getWateringIntervalDays());
+                Integer interval = schedule.getWateringIntervalDays();
 
+                if (lastWateredDate != null && interval != null && interval > 0) {
+                    nextWateringDate = lastWateredDate.plusDays(interval);
                     if (nextWateringDate.isBefore(today)) {
                         wateringStatus = WateringStatus.WATER_OVERDUE;
-                        overdueCount++;
                     } else if (nextWateringDate.isEqual(today)) {
                         wateringStatus = WateringStatus.WATER_TODAY;
-                        waterTodayCount++;
                     } else {
                         wateringStatus = WateringStatus.WATER_UPCOMING;
-                    }
-
-                    // Include in upcomingCare if within 7 days (including overdue and today)
-                    if (!nextWateringDate.isAfter(cutoff)) {
-                        upcomingCare.add(new UpcomingCareResponse(
-                                plant.getId(),
-                                plant.getName(),
-                                nextWateringDate,
-                                wateringStatus
-                        ));
                     }
                 }
             }
 
-            if (recentPlants.size() < 5) {
-                recentPlants.add(new RecentPlantResponse(
-                        plant.getId(),
-                        plant.getName(),
-                        plant.getCategory() != null ? plant.getCategory().getName() : null,
-                        plant.getStatus(),
-                        wateringStatus,
-                        lastWateredDate,
-                        nextWateringDate
-                ));
-            }
+            recentPlants.add(new RecentPlantResponse(
+                    plant.getId(),
+                    plant.getName(),
+                    plant.getCategory() != null ? plant.getCategory().getName() : null,
+                    plant.getStatus(),
+                    wateringStatus,
+                    lastWateredDate,
+                    nextWateringDate
+            ));
         }
-
-        // Sort upcoming care chronologically ascending (overdue & today first)
-        upcomingCare.sort(Comparator.comparing(UpcomingCareResponse::getNextWateringDate)
-                .thenComparing(UpcomingCareResponse::getPlantName));
 
         return new DashboardResponse(
                 totalPlants,

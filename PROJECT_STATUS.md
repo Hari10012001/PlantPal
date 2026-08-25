@@ -1,13 +1,13 @@
 # PROJECT_STATUS.md
 ## PlantPal - Personal Plant Care, Watering Schedule and Growth Monitoring Platform
-## Version 14 — Milestone 8 Completed
+## Version 15 — Milestone 8 Hardened & Completed
 
 ---
 
 ## Current Phase
 
-Milestone 8 (Dashboard & Care Summary Statistics) COMPLETE.
-Status: MILESTONE 8 VERIFIED AND COMPLETED — Awaiting Approval for Milestone 9
+Milestone 8 (Dashboard & Care Summary Statistics) HARDENED & COMPLETE.
+Status: MILESTONE 8 HARDENED & VERIFIED — Awaiting Approval for Milestone 9
 Last Updated: 2026-08-25
 
 ---
@@ -26,8 +26,9 @@ Last Updated: 2026-08-25
 - Care Schedules Management module fully implemented with dynamic date arithmetic for watering status (`NOT_SET`, `WATER_TODAY`, `WATER_UPCOMING`, `WATER_OVERDUE`).
 - Watering Records & History Management module fully implemented with cascade deletion and care schedule synchronization.
 - Growth Records & Tracking Management module fully implemented with cascade deletion and observation tracking.
-- **Dashboard & Care Summary Statistics module fully implemented:**
-  - `PlantRepository.findByUserIdOrderByCreatedAtDesc`
+- **Dashboard & Care Summary Statistics module fully implemented & hardened:**
+  - `PlantRepository.findTop5ByUserIdOrderByCreatedAtDesc` (DB-level `LIMIT 5` query for `recentPlants`)
+  - `CareScheduleRepository.findByUserIdWithPlantAndCategory` (Bulk JOIN FETCH query completely eliminating N+1 loop)
   - `RecentPlantResponse`, `UpcomingCareResponse`, and `DashboardResponse` DTOs
   - `DashboardService` calculating `totalPlants`, `healthyPlants`, `needsAttentionPlants`, `inactivePlants`, `waterTodayCount`, `overdueCount`, `recentPlants` (max 5, newest-first), and `upcomingCare` (within 7 days, excluding `NOT_SET`, ascending chronological order)
   - `DashboardController` (`GET /api/dashboard`)
@@ -60,6 +61,7 @@ Last Updated: 2026-08-25
 | **Milestone 6: Watering Records & History**    | **COMPLETED & VERIFIED** | 2026-08-25 |
 | **Milestone 7: Growth Records & Tracking**     | **COMPLETED & VERIFIED** | 2026-08-25 |
 | **Milestone 8: Dashboard & Summary Stats**     | **COMPLETED & VERIFIED** | 2026-08-25 |
+| **M8 Performance & Quality Hardening**         | **COMPLETED & VERIFIED** | 2026-08-25 |
 
 ---
 
@@ -74,7 +76,11 @@ Last Updated: 2026-08-25
    - `DashboardControllerTest.testDashboard_Unauthenticated_Unauthorized` (401 Unauthorized)
    - All 71 tests from Milestones 1 through 7 continue to pass 100%.
 
-2. **Live REST API Verification (Port 8080):** **SUCCESS**
+2. **Performance Hardening Improvements:**
+   - **N+1 Query Elimination:** Replaced individual in-loop queries with `CareScheduleRepository.findByUserIdWithPlantAndCategory`, executing 1 bulk `JOIN FETCH` query for all schedules.
+   - **Database-Level Limit:** Replaced in-memory sub-listing with `PlantRepository.findTop5ByUserIdOrderByCreatedAtDesc`, executing a database-level query limited to 5 records.
+
+3. **Live REST API Verification (Port 8080):** **SUCCESS**
    - Verified empty dashboard for newly registered user.
    - Alice creates 6 controlled plants with varied statuses and care intervals.
    - Bob creates 2 plants.
