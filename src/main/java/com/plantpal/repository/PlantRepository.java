@@ -27,6 +27,8 @@ public interface PlantRepository extends JpaRepository<Plant, Long> {
 
     long countByUserId(Long userId);
 
+    long countByStatus(PlantStatus status);
+
     long countByUserIdAndStatus(Long userId, PlantStatus status);
 
     @Query("SELECT p FROM Plant p WHERE p.user.id = :userId " +
