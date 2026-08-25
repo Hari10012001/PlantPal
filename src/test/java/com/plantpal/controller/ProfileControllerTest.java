@@ -91,7 +91,7 @@ class ProfileControllerTest {
     }
 
     @Test
-    @DisplayName("Endpoint 20: PUT /api/profile updates user's full name")
+    @DisplayName("Endpoint 20: PUT /api/profile with CSRF updates user's full name")
     @WithMockUser(username = "alice@plantpal.local", roles = {"USER"})
     void testUpdateProfile_Success() throws Exception {
         UpdateProfileRequest request = new UpdateProfileRequest("Alice Elizabeth Smith");
@@ -103,6 +103,18 @@ class ProfileControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fullName").value("Alice Elizabeth Smith"))
                 .andExpect(jsonPath("$.email").value("alice@plantpal.local"));
+    }
+
+    @Test
+    @DisplayName("CSRF Security: PUT /api/profile without CSRF token returns 403 Forbidden")
+    @WithMockUser(username = "alice@plantpal.local", roles = {"USER"})
+    void testUpdateProfile_WithoutCsrf_Forbidden() throws Exception {
+        UpdateProfileRequest request = new UpdateProfileRequest("Hacked Profile Name");
+
+        mockMvc.perform(put("/api/profile")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -120,7 +132,7 @@ class ProfileControllerTest {
     }
 
     @Test
-    @DisplayName("Endpoint 21: PUT /api/profile/password successfully changes user password")
+    @DisplayName("Endpoint 21: PUT /api/profile/password with CSRF successfully changes user password")
     @WithMockUser(username = "alice@plantpal.local", roles = {"USER"})
     void testChangePassword_Success() throws Exception {
         ChangePasswordRequest request = new ChangePasswordRequest(
@@ -138,6 +150,22 @@ class ProfileControllerTest {
 
         User updatedUser = userRepository.findById(alice.getId()).orElseThrow();
         assertTrue(passwordEncoder.matches("NewBrandPassword@2026", updatedUser.getPasswordHash()));
+    }
+
+    @Test
+    @DisplayName("CSRF Security: PUT /api/profile/password without CSRF token returns 403 Forbidden")
+    @WithMockUser(username = "alice@plantpal.local", roles = {"USER"})
+    void testChangePassword_WithoutCsrf_Forbidden() throws Exception {
+        ChangePasswordRequest request = new ChangePasswordRequest(
+                "OldPass123!",
+                "NewBrandPassword@2026",
+                "NewBrandPassword@2026"
+        );
+
+        mockMvc.perform(put("/api/profile/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
     }
 
     @Test

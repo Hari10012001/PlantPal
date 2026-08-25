@@ -2,7 +2,6 @@ package com.plantpal.service;
 
 import com.plantpal.dto.response.AdminStatsResponse;
 import com.plantpal.dto.response.AdminUserResponse;
-import com.plantpal.entity.User;
 import com.plantpal.enums.PlantStatus;
 import com.plantpal.repository.GrowthRecordRepository;
 import com.plantpal.repository.PlantCategoryRepository;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class AdminService {
@@ -40,18 +38,8 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public List<AdminUserResponse> getAllUsers() {
-        List<User> users = userRepository.findAllByOrderByIdAsc();
-        return users.stream().map(user -> {
-            long plantCount = plantRepository.countByUserId(user.getId());
-            return new AdminUserResponse(
-                    user.getId(),
-                    user.getFullName(),
-                    user.getEmail(),
-                    user.getRole(),
-                    plantCount,
-                    user.getCreatedAt()
-            );
-        }).collect(Collectors.toList());
+        // Single grouped query eliminates N+1 query pattern completely
+        return userRepository.findAllUsersWithPlantCount();
     }
 
     @Transactional(readOnly = true)

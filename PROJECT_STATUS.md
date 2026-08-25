@@ -1,13 +1,13 @@
 # PROJECT_STATUS.md
 ## PlantPal - Personal Plant Care, Watering Schedule and Growth Monitoring Platform
-## Version 16 — Milestone 9 Completed
+## Version 17 — Milestone 9 & 9.1 Hardened & Completed
 
 ---
 
 ## Current Phase
 
-Milestone 9 (Admin Panel & User Profile Management) COMPLETE.
-Status: ALL BACKEND MILESTONES (M1–M9) VERIFIED AND COMPLETED — Ready for Milestone 10 (Frontend & UI Polish)
+Milestone 9 & 9.1 (Final Backend Hardening & Admin Optimization) COMPLETE.
+Status: ALL BACKEND MILESTONES (M1–M9.1) FULLY OPTIMIZED, VERIFIED, AND LOCKED — Ready for Milestone 10 (Frontend Web Interface & UI Polish)
 Last Updated: 2026-08-25
 
 ---
@@ -18,7 +18,7 @@ Last Updated: 2026-08-25
 - Spring Boot 3.2.5 application skeleton configured with Java 17/21 LTS.
 - MySQL 8.x connection established via environment variable (`DB_PASSWORD`).
 - Initial Admin password loaded via environment variable (`ADMIN_PASSWORD`). No hardcoded secrets anywhere in `src/main`.
-- Spring Security 6 session-based authentication fully operational with CSRF protection (`CookieCsrfTokenRepository`).
+- Spring Security 6 session-based authentication fully operational with strict CSRF protection (`CookieCsrfTokenRepository` + `SpaCsrfTokenRequestHandler`).
 - Full authentication suite verified: User entity, Role enum, UserRepository, AuthService, CustomUserDetailsService, AuthController.
 - Default Admin account seeded idempotently via `ADMIN_PASSWORD` env var (`admin@plantpal.local`).
 - Plant Categories module fully implemented strictly per the approved 27-endpoint API contract.
@@ -27,15 +27,17 @@ Last Updated: 2026-08-25
 - Watering Records & History Management module fully implemented with cascade deletion and care schedule synchronization.
 - Growth Records & Tracking Management module fully implemented with cascade deletion and observation tracking.
 - Dashboard & Care Summary Statistics module fully implemented and hardened (N+1 query eliminated with bulk fetch, database-level limit on recent plants).
-- **Admin Panel & User Profile Management module fully implemented:**
+- **Admin Panel & User Profile Management module fully implemented & hardened (M9 & M9.1):**
   - `ProfileResponse`, `UpdateProfileRequest`, `ChangePasswordRequest`, `AdminUserResponse`, `AdminStatsResponse`
-  - `UserService` managing profile fetch, profile update, and BCrypt-validated password changes
-  - `AdminService` providing read-only user overview with plant counts and system-wide statistics (users, plants, watering records, growth records, categories, plantsByStatus)
+  - `UserRepository.findAllUsersWithPlantCount()` single grouped query eliminating N+1 query pattern in Admin user overview
+  - `UserService` managing profile lookups, updates, and BCrypt-checked password modifications
+  - `AdminService` providing single-query user overview with plant counts and system-wide statistics
   - `ProfileController` (`GET /api/profile`, `PUT /api/profile`, `PUT /api/profile/password`)
   - `AdminController` (`GET /api/admin/users`, `GET /api/admin/stats`)
   - Strict RBAC: normal USER denied from `/api/admin/**` (403 Forbidden); unauthenticated requests rejected (401 Unauthorized)
-- **ALL 27 AUTHORITATIVE REST API ENDPOINTS ARE FULLY IMPLEMENTED AND VERIFIED.**
-- All unit & integration tests passing (`mvn clean test` 100% success — 90 tests passed).
+  - Explicit CSRF-negative tests passing (403 Forbidden without token; 200 OK with token)
+- **ALL 27 AUTHORITATIVE REST API ENDPOINTS ARE FULLY IMPLEMENTED, HARDENED, AND VERIFIED.**
+- All unit & integration tests passing (`mvn clean test` 100% success — 92 tests passed).
 - Live server verified on port 8080.
 
 ---
@@ -65,6 +67,7 @@ Last Updated: 2026-08-25
 | **Milestone 8: Dashboard & Summary Stats**     | **COMPLETED & VERIFIED** | 2026-08-25 |
 | **M8 Performance & Quality Hardening**         | **COMPLETED & VERIFIED** | 2026-08-25 |
 | **Milestone 9: Admin Panel & User Profile**    | **COMPLETED & VERIFIED** | 2026-08-25 |
+| **Milestone 9.1: Final Backend Hardening**     | **COMPLETED & VERIFIED** | 2026-08-25 |
 
 ---
 
@@ -93,7 +96,7 @@ Last Updated: 2026-08-25
 | 19 | GET | `/api/profile` | Authenticated | No | ✅ M9 Verified |
 | 20 | PUT | `/api/profile` | Authenticated | Yes | ✅ M9 Verified |
 | 21 | PUT | `/api/profile/password` | Authenticated | Yes | ✅ M9 Verified |
-| 22 | GET | `/api/admin/users` | ADMIN | No | ✅ M9 Verified |
+| 22 | GET | `/api/admin/users` | ADMIN | No | ✅ M9.1 Verified |
 | 23 | GET | `/api/admin/categories` | ADMIN | No | ✅ M3 Verified |
 | 24 | POST | `/api/admin/categories` | ADMIN | Yes | ✅ M3 Verified |
 | 25 | PUT | `/api/admin/categories/{id}` | ADMIN | Yes | ✅ M3 Verified |
@@ -102,22 +105,17 @@ Last Updated: 2026-08-25
 
 ---
 
-## Milestone 9 Verification Summary
+## Milestone 9.1 Verification Summary
 
-1. **Unit & Integration Tests (`mvn clean test`):** **SUCCESS (90/90 tests passed, 0 failures, 0 errors, 0 skipped)**
-   - `ProfileControllerTest`: 8 tests (Get profile with totalPlants, update fullName, change password with BCrypt verification, incorrect current password 400, mismatched confirm password 400, short password 400, unauthenticated 401).
-   - `AdminControllerTest`: 5 tests (Get users list for ADMIN, USER access to admin users 403 Forbidden, get system stats for ADMIN, USER access to admin stats 403 Forbidden, unauthenticated 401).
-   - All 77 tests from Milestones 1 through 8 continue to pass 100%.
+1. **Unit & Integration Tests (`mvn clean test`):** **SUCCESS (92/92 tests passed, 0 failures, 0 errors, 0 skipped)**
+   - Single grouped query test for `AdminControllerTest`: `testGetAllUsers_Admin_Success` verifies user list with accurate plant counts in 1 query.
+   - CSRF-negative tests: `testUpdateProfile_WithoutCsrf_Forbidden` (403 Forbidden) and `testChangePassword_WithoutCsrf_Forbidden` (403 Forbidden).
+   - CSRF-positive tests: `testUpdateProfile_Success` (200 OK) and `testChangePassword_Success` (200 OK).
+   - All 92 tests from Milestones 1 through 9.1 pass 100%.
 
-2. **Live REST API Verification (Port 8080):** **SUCCESS**
-   - User fetches profile (`GET /api/profile`) -> 200 OK.
-   - User updates name (`PUT /api/profile`) -> 200 OK.
-   - User changes password (`PUT /api/profile/password`) -> 200 OK.
-   - Re-login with new password verified -> 200 OK.
-   - Wrong current password and mismatched new password return 400 Bad Request.
-   - Normal user attempting `/api/admin/users` and `/api/admin/stats` returns 403 Forbidden.
-   - Admin accesses `/api/admin/users` (read-only list with plant counts) and `/api/admin/stats` (counts and status map) -> 200 OK.
-   - Unauthenticated requests return 401 Unauthorized.
+2. **Performance Hardening (N+1 Query Elimination in Admin User Overview):**
+   - Implemented `UserRepository.findAllUsersWithPlantCount()` executing a single `LEFT JOIN Plant p ON p.user = u GROUP BY u.id...` query.
+   - `AdminService.getAllUsers()` now executes in **1 single SQL query** regardless of the number of registered users.
 
 ---
 
