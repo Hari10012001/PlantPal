@@ -3,6 +3,8 @@ package com.plantpal.entity;
 import com.plantpal.enums.SunlightNeeds;
 import com.plantpal.enums.WateringStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,6 +19,7 @@ public class CareSchedule {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "plant_id", nullable = false, unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Plant plant;
 
     @Column(name = "watering_interval_days", nullable = false)

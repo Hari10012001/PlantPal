@@ -67,7 +67,7 @@ public class PlantService {
 
         Plant savedPlant = plantRepository.save(plant);
 
-        // Auto-create care schedule for the plant
+        // Auto-create care schedule for the plant with bidirectional synchronization
         CareSchedule careSchedule = new CareSchedule(
                 savedPlant,
                 (request.getWateringIntervalDays() != null && request.getWateringIntervalDays() >= 1) ? request.getWateringIntervalDays() : 7,
@@ -75,6 +75,7 @@ public class PlantService {
                 request.getSunlightNeeds(),
                 request.getFertilizingIntervalDays()
         );
+        savedPlant.setCareSchedule(careSchedule);
         CareSchedule savedSchedule = careScheduleRepository.save(careSchedule);
 
         return PlantResponse.fromEntity(savedPlant, savedSchedule);

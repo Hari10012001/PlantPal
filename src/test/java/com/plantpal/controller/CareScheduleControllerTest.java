@@ -27,9 +27,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -227,25 +227,47 @@ class CareScheduleControllerTest {
     }
 
     @Test
-    @DisplayName("Validation: Invalid watering interval returns 400 Bad Request")
+    @DisplayName("Validation: Invalid watering interval (< 1 or > 365) returns 400 Bad Request")
     @WithMockUser(username = "alice@plantpal.local", roles = {"USER"})
     void testUpdateCareSchedule_InvalidInterval_BadRequest() throws Exception {
         Plant plant = plantRepository.save(new Plant(alice, herbCategory, "Dill", "Anethum", "Desc", "Pot", PlantStatus.HEALTHY));
         careScheduleRepository.save(new CareSchedule(plant, 7, null, null, null));
 
-        CareScheduleRequest updateReq = new CareScheduleRequest(
-                0, // Interval < 1
-                null,
-                null,
-                null
-        );
-
+        // Test < 1
+        CareScheduleRequest tooSmall = new CareScheduleRequest(0, null, null, null);
         mockMvc.perform(put("/api/plants/" + plant.getId() + "/care")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateReq)))
+                        .content(objectMapper.writeValueAsString(tooSmall)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.wateringIntervalDays").exists());
+
+        // Test > 365
+        CareScheduleRequest tooLarge = new CareScheduleRequest(366, null, null, null);
+        mockMvc.perform(put("/api/plants/" + plant.getId() + "/care")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(tooLarge)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.wateringIntervalDays").exists());
+    }
+
+    @Test
+    @DisplayName("Cascade Deletion: Deleting a Plant automatically deletes its associated CareSchedule")
+    @WithMockUser(username = "alice@plantpal.local", roles = {"USER"})
+    void testPlantDeletion_CascadesToCareSchedule() throws Exception {
+        Plant plant = plantRepository.save(new Plant(alice, herbCategory, "Cascade Test Plant", "Ocimum", "Desc", "Room", PlantStatus.HEALTHY));
+        CareSchedule schedule = careScheduleRepository.save(new CareSchedule(plant, 7, LocalDate.now(), SunlightNeeds.FULL_SUN, 14));
+        Long scheduleId = schedule.getId();
+
+        assertTrue(careScheduleRepository.existsById(scheduleId));
+
+        mockMvc.perform(delete("/api/plants/" + plant.getId())
+                        .with(csrf()))
+                .andExpect(status().isNoContent());
+
+        assertFalse(plantRepository.existsById(plant.getId()));
+        assertFalse(careScheduleRepository.existsById(scheduleId));
     }
 
     @Test
