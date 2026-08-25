@@ -5,6 +5,9 @@ import com.plantpal.dto.request.LoginRequest;
 import com.plantpal.dto.request.RegisterRequest;
 import com.plantpal.entity.User;
 import com.plantpal.enums.Role;
+import com.plantpal.repository.CareScheduleRepository;
+import com.plantpal.repository.PlantCategoryRepository;
+import com.plantpal.repository.PlantRepository;
 import com.plantpal.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,6 +38,15 @@ class AuthControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
+    private CareScheduleRepository careScheduleRepository;
+
+    @Autowired
+    private PlantRepository plantRepository;
+
+    @Autowired
+    private PlantCategoryRepository categoryRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -45,6 +57,9 @@ class AuthControllerTest {
 
     @BeforeEach
     void setUp() {
+        careScheduleRepository.deleteAll();
+        plantRepository.deleteAll();
+        categoryRepository.deleteAll();
         userRepository.deleteAll();
 
         // Seed dedicated test admin user for testing

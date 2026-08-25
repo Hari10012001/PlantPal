@@ -3,11 +3,13 @@ package com.plantpal.service;
 import com.plantpal.dto.request.PlantRequest;
 import com.plantpal.dto.request.PlantStatusRequest;
 import com.plantpal.dto.response.PlantResponse;
+import com.plantpal.entity.CareSchedule;
 import com.plantpal.entity.Plant;
 import com.plantpal.entity.PlantCategory;
 import com.plantpal.entity.User;
 import com.plantpal.enums.PlantStatus;
 import com.plantpal.exception.ResourceNotFoundException;
+import com.plantpal.repository.CareScheduleRepository;
 import com.plantpal.repository.PlantCategoryRepository;
 import com.plantpal.repository.PlantRepository;
 import org.springframework.stereotype.Service;
@@ -21,23 +23,31 @@ public class PlantService {
 
     private final PlantRepository plantRepository;
     private final PlantCategoryRepository categoryRepository;
+    private final CareScheduleRepository careScheduleRepository;
 
-    public PlantService(PlantRepository plantRepository, PlantCategoryRepository categoryRepository) {
+    public PlantService(PlantRepository plantRepository,
+                        PlantCategoryRepository categoryRepository,
+                        CareScheduleRepository careScheduleRepository) {
         this.plantRepository = plantRepository;
         this.categoryRepository = categoryRepository;
+        this.careScheduleRepository = careScheduleRepository;
     }
 
     public List<PlantResponse> getUserPlants(Long userId, Long categoryId, PlantStatus status, String search) {
         String cleanSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
         return plantRepository.searchUserPlants(userId, categoryId, status, cleanSearch).stream()
-                .map(PlantResponse::fromEntity)
+                .map(plant -> {
+                    CareSchedule schedule = careScheduleRepository.findByPlantId(plant.getId()).orElse(null);
+                    return PlantResponse.fromEntity(plant, schedule);
+                })
                 .collect(Collectors.toList());
     }
 
     public PlantResponse getPlantById(Long plantId, Long userId) {
         Plant plant = plantRepository.findByIdAndUserId(plantId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Plant not found with id: " + plantId));
-        return PlantResponse.fromEntity(plant);
+        CareSchedule schedule = careScheduleRepository.findByPlantId(plant.getId()).orElse(null);
+        return PlantResponse.fromEntity(plant, schedule);
     }
 
     @Transactional
@@ -55,8 +65,19 @@ public class PlantService {
                 request.getStatus() != null ? request.getStatus() : PlantStatus.HEALTHY
         );
 
-        Plant saved = plantRepository.save(plant);
-        return PlantResponse.fromEntity(saved);
+        Plant savedPlant = plantRepository.save(plant);
+
+        // Auto-create care schedule for the plant
+        CareSchedule careSchedule = new CareSchedule(
+                savedPlant,
+                (request.getWateringIntervalDays() != null && request.getWateringIntervalDays() >= 1) ? request.getWateringIntervalDays() : 7,
+                request.getLastWateredDate(),
+                request.getSunlightNeeds(),
+                request.getFertilizingIntervalDays()
+        );
+        CareSchedule savedSchedule = careScheduleRepository.save(careSchedule);
+
+        return PlantResponse.fromEntity(savedPlant, savedSchedule);
     }
 
     @Transactional
@@ -76,8 +97,9 @@ public class PlantService {
             plant.setStatus(request.getStatus());
         }
 
-        Plant updated = plantRepository.save(plant);
-        return PlantResponse.fromEntity(updated);
+        Plant updatedPlant = plantRepository.save(plant);
+        CareSchedule schedule = careScheduleRepository.findByPlantId(plant.getId()).orElse(null);
+        return PlantResponse.fromEntity(updatedPlant, schedule);
     }
 
     @Transactional
@@ -86,8 +108,9 @@ public class PlantService {
                 .orElseThrow(() -> new ResourceNotFoundException("Plant not found with id: " + plantId));
 
         plant.setStatus(request.getStatus());
-        Plant updated = plantRepository.save(plant);
-        return PlantResponse.fromEntity(updated);
+        Plant updatedPlant = plantRepository.save(plant);
+        CareSchedule schedule = careScheduleRepository.findByPlantId(plant.getId()).orElse(null);
+        return PlantResponse.fromEntity(updatedPlant, schedule);
     }
 
     @Transactional

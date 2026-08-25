@@ -1,9 +1,10 @@
 package com.plantpal.dto.request;
 
 import com.plantpal.enums.PlantStatus;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import com.plantpal.enums.SunlightNeeds;
+import jakarta.validation.constraints.*;
+
+import java.time.LocalDate;
 
 public class PlantRequest {
 
@@ -25,6 +26,19 @@ public class PlantRequest {
 
     private PlantStatus status;
 
+    // Optional Care Schedule configuration on plant create/update
+    @Min(value = 1, message = "Watering interval must be at least 1 day")
+    @Max(value = 365, message = "Watering interval cannot exceed 365 days")
+    private Integer wateringIntervalDays = 7;
+
+    @PastOrPresent(message = "Last watered date cannot be in the future")
+    private LocalDate lastWateredDate;
+
+    private SunlightNeeds sunlightNeeds;
+
+    @Min(value = 1, message = "Fertilizing interval must be at least 1 day")
+    private Integer fertilizingIntervalDays;
+
     public PlantRequest() {
     }
 
@@ -36,6 +50,23 @@ public class PlantRequest {
         this.description = description;
         this.location = location;
         this.status = status;
+        this.wateringIntervalDays = 7;
+    }
+
+    public PlantRequest(String name, Long categoryId, String species,
+                        String description, String location, PlantStatus status,
+                        Integer wateringIntervalDays, LocalDate lastWateredDate,
+                        SunlightNeeds sunlightNeeds, Integer fertilizingIntervalDays) {
+        this.name = name;
+        this.categoryId = categoryId;
+        this.species = species;
+        this.description = description;
+        this.location = location;
+        this.status = status;
+        this.wateringIntervalDays = (wateringIntervalDays != null) ? wateringIntervalDays : 7;
+        this.lastWateredDate = lastWateredDate;
+        this.sunlightNeeds = sunlightNeeds;
+        this.fertilizingIntervalDays = fertilizingIntervalDays;
     }
 
     public String getName() {
@@ -84,5 +115,37 @@ public class PlantRequest {
 
     public void setStatus(PlantStatus status) {
         this.status = status;
+    }
+
+    public Integer getWateringIntervalDays() {
+        return wateringIntervalDays;
+    }
+
+    public void setWateringIntervalDays(Integer wateringIntervalDays) {
+        this.wateringIntervalDays = wateringIntervalDays;
+    }
+
+    public LocalDate getLastWateredDate() {
+        return lastWateredDate;
+    }
+
+    public void setLastWateredDate(LocalDate lastWateredDate) {
+        this.lastWateredDate = lastWateredDate;
+    }
+
+    public SunlightNeeds getSunlightNeeds() {
+        return sunlightNeeds;
+    }
+
+    public void setSunlightNeeds(SunlightNeeds sunlightNeeds) {
+        this.sunlightNeeds = sunlightNeeds;
+    }
+
+    public Integer getFertilizingIntervalDays() {
+        return fertilizingIntervalDays;
+    }
+
+    public void setFertilizingIntervalDays(Integer fertilizingIntervalDays) {
+        this.fertilizingIntervalDays = fertilizingIntervalDays;
     }
 }

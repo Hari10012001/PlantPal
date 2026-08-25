@@ -1,13 +1,13 @@
 # PROJECT_STATUS.md
 ## PlantPal - Personal Plant Care, Watering Schedule and Growth Monitoring Platform
-## Version 10 — Milestone 4 Completed
+## Version 11 — Milestone 5 Completed
 
 ---
 
 ## Current Phase
 
-Milestone 4 (Plant CRUD & User Ownership Management) COMPLETE.
-Status: MILESTONE 4 VERIFIED AND COMPLETED — Awaiting Approval for Milestone 5
+Milestone 5 (Care Schedules Management) COMPLETE.
+Status: MILESTONE 5 VERIFIED AND COMPLETED — Awaiting Approval for Milestone 6
 Last Updated: 2026-08-25
 
 ---
@@ -22,17 +22,20 @@ Last Updated: 2026-08-25
 - Full authentication suite verified: User entity, Role enum, UserRepository, AuthService, CustomUserDetailsService, AuthController.
 - Default Admin account seeded idempotently via `ADMIN_PASSWORD` env var (`admin@plantpal.local`).
 - Plant Categories module fully implemented strictly per the approved 27-endpoint API contract.
-- **Plant CRUD & User Ownership Management module fully implemented:**
-  - `Plant` entity & `plants` table with Foreign Keys to `users` and `plant_categories`
-  - `PlantStatus` enum (`HEALTHY`, `NEEDS_ATTENTION`, `INACTIVE`)
-  - `PlantRepository` with user-scoped queries and search/filter JPQL methods
-  - `PlantRequest`, `PlantStatusRequest`, and `PlantResponse` DTOs
-  - `PlantService` with strict ownership isolation (returns 404 for non-owners to prevent enumeration)
-  - `PlantController` (`GET /api/plants`, `GET /api/plants/{id}`, `POST /api/plants`, `PUT /api/plants/{id}`, `PATCH /api/plants/{id}/status`, `DELETE /api/plants/{id}`)
-  - Category in-use deletion protection (returns 409 Conflict when attempting to delete a category referenced by plants)
-- All unit & integration tests passing (`mvn clean test` 100% success — 38 tests passed).
+- Plant CRUD & User Ownership Management module fully implemented with strict anti-enumeration 404 security.
+- **Care Schedules Management module fully implemented:**
+  - `CareSchedule` entity & `care_schedules` table with 1-to-1 unique foreign key to `plants(id)`
+  - `SunlightNeeds` enum (`FULL_SUN`, `PARTIAL_SUN`, `SHADE`)
+  - `WateringStatus` enum (`NOT_SET`, `WATER_TODAY`, `WATER_UPCOMING`, `WATER_OVERDUE`)
+  - Dynamic date arithmetic for `nextWateringDate` and `wateringStatus` (computed on-the-fly in Java, never stored in DB)
+  - Auto-creation of care schedule upon plant creation (`POST /api/plants`)
+  - `CareScheduleRepository` with plant & user scoping
+  - `CareScheduleRequest` and `CareScheduleResponse` DTOs
+  - `CareScheduleService` with strict ownership isolation (404 for non-owners)
+  - `CareScheduleController` (`GET /api/plants/{id}/care`, `PUT /api/plants/{id}/care`)
+- All unit & integration tests passing (`mvn clean test` 100% success — 48 tests passed).
 - Live server verified on port 8080.
-- Database schema and foreign key constraints verified in MySQL.
+- Database schema, 1-to-1 unique constraints, and foreign key relationships verified in MySQL.
 
 ---
 
@@ -55,44 +58,36 @@ Last Updated: 2026-08-25
 | **Milestone 3: Plant Categories Management**   | **COMPLETED & VERIFIED** | 2026-08-25 |
 | **M3 Consistency Fix: Strict 27 Endpoint Sync**| **COMPLETED & VERIFIED** | 2026-08-25 |
 | **Milestone 4: Plant CRUD & User Ownership**   | **COMPLETED & VERIFIED** | 2026-08-25 |
+| **Milestone 5: Care Schedules Management**     | **COMPLETED & VERIFIED** | 2026-08-25 |
 
 ---
 
-## Milestone 4 Verification Summary
+## Milestone 5 Verification Summary
 
-1. **Unit & Integration Tests (`mvn clean test`):** **SUCCESS (38/38 tests passed, 0 failures, 0 errors)**
-   - `PlantControllerTest.testCreatePlant_Success` (201 Created)
-   - `PlantControllerTest.testCreatePlant_InvalidCategory_NotFound` (404 Not Found)
-   - `PlantControllerTest.testCreatePlant_BlankName_BadRequest` (400 Bad Request)
-   - `PlantControllerTest.testGetMyPlants_UserOwnership` (200 OK — retrieves only own plants)
-   - `PlantControllerTest.testSearchAndFilterPlants` (200 OK — category filter, status filter, keyword search)
-   - `PlantControllerTest.testGetPlantById_Owner_Success` (200 OK)
-   - `PlantControllerTest.testGetPlantById_NonOwner_Returns404` (404 Not Found — prevents ID enumeration)
-   - `PlantControllerTest.testUpdatePlant_Owner_Success` (200 OK)
-   - `PlantControllerTest.testUpdatePlant_NonOwner_Returns404` (404 Not Found)
-   - `PlantControllerTest.testUpdatePlantStatus_Owner_Success` (200 OK)
-   - `PlantControllerTest.testDeletePlant_Owner_Success` (204 No Content)
-   - `PlantControllerTest.testDeletePlant_NonOwner_Returns404` (404 Not Found)
-   - `PlantControllerTest.testCategoryDeletionProtection_WhenReferencedByPlant` (409 Conflict)
-   - `PlantControllerTest.testUnauthenticated_AccessPlants_Unauthorized` (401 Unauthorized)
-   - All Milestone 1, 2, and 3 tests (24 tests) continue to pass 100%.
+1. **Unit & Integration Tests (`mvn clean test`):** **SUCCESS (48/48 tests passed, 0 failures, 0 errors)**
+   - `CareScheduleControllerTest.testPlantCreation_AutoCreatesCareSchedule` (201 Created + NOT_SET status)
+   - `CareScheduleControllerTest.testGetCareSchedule_Owner_Success` (200 OK)
+   - `CareScheduleControllerTest.testCareSchedule_WateringStatus_WaterToday` (200 OK + WATER_TODAY)
+   - `CareScheduleControllerTest.testCareSchedule_WateringStatus_WaterOverdue` (200 OK + WATER_OVERDUE)
+   - `CareScheduleControllerTest.testUpdateCareSchedule_Owner_Success` (200 OK + WATER_UPCOMING)
+   - `CareScheduleControllerTest.testGetCareSchedule_NonOwner_Returns404` (404 Not Found)
+   - `CareScheduleControllerTest.testUpdateCareSchedule_NonOwner_Returns404` (404 Not Found)
+   - `CareScheduleControllerTest.testUpdateCareSchedule_FutureDate_BadRequest` (400 Bad Request)
+   - `CareScheduleControllerTest.testUpdateCareSchedule_InvalidInterval_BadRequest` (400 Bad Request)
+   - `CareScheduleControllerTest.testUnauthenticated_AccessCareSchedule_Unauthorized` (401 Unauthorized)
+   - All 38 tests from Milestones 1, 2, 3, and 4 continue to pass 100%.
 
 2. **Live REST API Verification (Port 8080):** **SUCCESS**
-   - User A registers, logs in, creates "Sweet Basil" (Herb) and "Aloe Vera" (Succulent): 201 Created
-   - User B registers, logs in, retrieves own plants: returns 0 items (strict user isolation)
-   - User B attempts `GET /api/plants/{alicePlantId}`: 404 Not Found
-   - User B attempts `PUT /api/plants/{alicePlantId}`: 404 Not Found
-   - User B attempts `DELETE /api/plants/{alicePlantId}`: 404 Not Found
-   - User A updates plant: 200 OK
-   - User A patches status (`NEEDS_ATTENTION`): 200 OK
-   - Category deletion protection: 409 Conflict when category is in use by plant
-   - User A deletes own plant: 204 No Content
-   - Post-delete check: 404 Not Found
-   - Unauthenticated requests: 401 Unauthorized
+   - Plant creation auto-creates care schedule with `wateringStatus = NOT_SET`
+   - `GET /api/plants/{id}/care` returns full care schedule
+   - `PUT /api/plants/{id}/care` dynamically computes `WATER_TODAY`, `WATER_OVERDUE`, `WATER_UPCOMING`
+   - Non-owner access to `GET` and `PUT /api/plants/{id}/care` returns `404 Not Found`
+   - Future `lastWateredDate` returns `400 Bad Request`
+   - Unauthenticated access returns `401 Unauthorized`
 
 3. **Database Verification (MySQL):**
-   - `plants` table exists with Foreign Keys: `user_id` -> `users(id)` and `category_id` -> `plant_categories(id)`.
-   - Exactly the 8 approved categories preserved in database.
+   - Table `care_schedules` verified with unique constraint on `plant_id` and foreign key constraint `plant_id -> plants(id)`.
+   - `nextWateringDate` and `wateringStatus` are dynamically computed and not stored in DB.
 
 ---
 
@@ -100,8 +95,7 @@ Last Updated: 2026-08-25
 
 | Milestone | Task                                       | Status  |
 |-----------|--------------------------------------------|---------|
-| **M5**    | **Care Schedules Management**              | **READY TO START (Awaiting Approval)** |
-| M6        | Watering Records                           | BLOCKED |
+| **M6**    | **Watering Records & History Management**  | **READY TO START (Awaiting Approval)** |
 | M7        | Growth Tracking                            | BLOCKED |
 | M8        | Dashboard                                  | BLOCKED |
 | M9        | Admin Panel                                | BLOCKED |

@@ -1,5 +1,6 @@
 package com.plantpal.dto.response;
 
+import com.plantpal.entity.CareSchedule;
 import com.plantpal.entity.Plant;
 import com.plantpal.enums.PlantStatus;
 
@@ -14,6 +15,7 @@ public class PlantResponse {
     private String location;
     private PlantStatus status;
     private CategoryResponse category;
+    private CareScheduleResponse careSchedule;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -22,7 +24,8 @@ public class PlantResponse {
 
     public PlantResponse(Long id, String name, String species, String description,
                          String location, PlantStatus status, CategoryResponse category,
-                         LocalDateTime createdAt, LocalDateTime updatedAt) {
+                         CareScheduleResponse careSchedule, LocalDateTime createdAt,
+                         LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
         this.species = species;
@@ -30,11 +33,16 @@ public class PlantResponse {
         this.location = location;
         this.status = status;
         this.category = category;
+        this.careSchedule = careSchedule;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
     public static PlantResponse fromEntity(Plant plant) {
+        return fromEntity(plant, null);
+    }
+
+    public static PlantResponse fromEntity(Plant plant, CareSchedule careSchedule) {
         if (plant == null) return null;
         return new PlantResponse(
                 plant.getId(),
@@ -44,6 +52,7 @@ public class PlantResponse {
                 plant.getLocation(),
                 plant.getStatus(),
                 CategoryResponse.fromEntity(plant.getCategory()),
+                CareScheduleResponse.fromEntity(careSchedule),
                 plant.getCreatedAt(),
                 plant.getUpdatedAt()
         );
@@ -103,6 +112,14 @@ public class PlantResponse {
 
     public void setCategory(CategoryResponse category) {
         this.category = category;
+    }
+
+    public CareScheduleResponse getCareSchedule() {
+        return careSchedule;
+    }
+
+    public void setCareSchedule(CareScheduleResponse careSchedule) {
+        this.careSchedule = careSchedule;
     }
 
     public LocalDateTime getCreatedAt() {

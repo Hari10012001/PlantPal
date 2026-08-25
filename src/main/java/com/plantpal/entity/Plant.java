@@ -20,6 +20,9 @@ public class Plant {
     @JoinColumn(name = "category_id", nullable = false)
     private PlantCategory category;
 
+    @OneToOne(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private CareSchedule careSchedule;
+
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
@@ -92,6 +95,14 @@ public class Plant {
 
     public void setCategory(PlantCategory category) {
         this.category = category;
+    }
+
+    public CareSchedule getCareSchedule() {
+        return careSchedule;
+    }
+
+    public void setCareSchedule(CareSchedule careSchedule) {
+        this.careSchedule = careSchedule;
     }
 
     public String getName() {
