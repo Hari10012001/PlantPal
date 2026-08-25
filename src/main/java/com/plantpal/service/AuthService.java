@@ -91,15 +91,17 @@ public class AuthService {
     }
 
     public UserResponse getCurrentUser() {
+        return UserResponse.fromEntity(getAuthenticatedUser());
+    }
+
+    public User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
             throw new BadCredentialsException("Not authenticated");
         }
 
         String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        return UserResponse.fromEntity(user);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 }

@@ -6,6 +6,7 @@ import com.plantpal.entity.PlantCategory;
 import com.plantpal.exception.DuplicateResourceException;
 import com.plantpal.exception.ResourceNotFoundException;
 import com.plantpal.repository.PlantCategoryRepository;
+import com.plantpal.repository.PlantRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,9 +17,11 @@ import java.util.stream.Collectors;
 public class CategoryService {
 
     private final PlantCategoryRepository categoryRepository;
+    private final PlantRepository plantRepository;
 
-    public CategoryService(PlantCategoryRepository categoryRepository) {
+    public CategoryService(PlantCategoryRepository categoryRepository, PlantRepository plantRepository) {
         this.categoryRepository = categoryRepository;
+        this.plantRepository = plantRepository;
     }
 
     public List<CategoryResponse> getAllCategories() {
@@ -73,8 +76,11 @@ public class CategoryService {
         PlantCategory category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
 
-        // Category-in-use protection: in M4 when plants table is added, foreign key RESTRICT
-        // and service-level checks will prevent deletion of referenced categories.
+        // Referenced category deletion protection (HTTP 409 Conflict)
+        if (plantRepository.existsByCategoryId(id)) {
+            throw new DuplicateResourceException("Cannot delete: plants are using this category");
+        }
+
         categoryRepository.delete(category);
     }
 }
