@@ -1,0 +1,193 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - PlantPal</title>
+    <link rel="stylesheet" href="/css/plantpal.css">
+    <style>
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 800px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav id="main-navbar"></nav>
+
+    <div class="main-content">
+        <div style="margin-bottom: 1.5rem;">
+            <h1 style="font-size: 1.85rem;">Account Profile &amp; Security</h1>
+            <p class="form-text-muted">Manage your personal information and account credentials</p>
+        </div>
+
+        <!-- Account Details Card -->
+        <div class="card-custom">
+            <div class="card-header-flex">
+                <h3>👤 Account Overview</h3>
+                <span id="profile-role-badge" class="badge-status badge-healthy">USER</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
+                <div>
+                    <div class="stat-label">Full Name</div>
+                    <div id="profile-fullname" style="font-size: 1.15rem; font-weight: 700; color: var(--primary-hover); margin-top: 0.25rem;">Loading...</div>
+                </div>
+                <div>
+                    <div class="stat-label">Email Address</div>
+                    <div id="profile-email" style="font-size: 1.15rem; font-weight: 600; margin-top: 0.25rem;">Loading...</div>
+                </div>
+                <div>
+                    <div class="stat-label">Total Plants Tracked</div>
+                    <div id="profile-plantcount" style="font-size: 1.15rem; font-weight: 700; color: var(--primary-color); margin-top: 0.25rem;">0</div>
+                </div>
+                <div>
+                    <div class="stat-label">Member Since</div>
+                    <div id="profile-created" style="font-weight: 600; margin-top: 0.25rem;">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-grid">
+            <!-- Edit Profile Name Card -->
+            <div class="card-custom">
+                <div class="card-header-flex">
+                    <h3>✏️ Update Profile Name</h3>
+                </div>
+                <form id="update-profile-form">
+                    <div class="form-group">
+                        <label class="form-label" for="input-fullname">Full Name *</label>
+                        <input type="text" id="input-fullname" class="form-control-custom" required minlength="2" maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="display-email">Email Address</label>
+                        <input type="email" id="display-email" class="form-control-custom" disabled style="background: #f3f4f6;">
+                        <small class="form-text-muted">Email address cannot be modified.</small>
+                    </div>
+                    <button type="submit" id="save-profile-btn" class="btn-primary-custom">
+                        Save Profile
+                    </button>
+                </form>
+            </div>
+
+            <!-- Change Password Card -->
+            <div class="card-custom">
+                <div class="card-header-flex">
+                    <h3>🔒 Change Password</h3>
+                </div>
+                <form id="change-password-form">
+                    <div class="form-group">
+                        <label class="form-label" for="current-password">Current Password *</label>
+                        <input type="password" id="current-password" class="form-control-custom" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="new-password">New Password *</label>
+                        <input type="password" id="new-password" class="form-control-custom" placeholder="At least 6 characters" required minlength="6" maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="confirm-new-password">Confirm New Password *</label>
+                        <input type="password" id="confirm-new-password" class="form-control-custom" placeholder="Re-enter new password" required minlength="6" maxlength="100">
+                    </div>
+                    <button type="submit" id="change-password-btn" class="btn-primary-custom">
+                        Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-custom">
+        PlantPal Platform &copy; 2026.
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await checkAuth();
+            if (user) {
+                loadProfile();
+            }
+        });
+
+        async function loadProfile() {
+            try {
+                const p = await apiRequest('/api/profile');
+                document.getElementById('profile-fullname').textContent = p.fullName;
+                document.getElementById('profile-email').textContent = p.email;
+                document.getElementById('profile-plantcount').textContent = p.totalPlants;
+                document.getElementById('profile-created').textContent = formatDate(p.createdAt?.split('T')[0]);
+                document.getElementById('profile-role-badge').textContent = p.role;
+
+                document.getElementById('input-fullname').value = p.fullName;
+                document.getElementById('display-email').value = p.email;
+            } catch (err) {
+                showToast(err.message || 'Failed to load profile', 'error');
+            }
+        }
+
+        // Update Profile Name
+        document.getElementById('update-profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('save-profile-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            const fullName = document.getElementById('input-fullname').value.trim();
+
+            try {
+                const updated = await apiRequest('/api/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({ fullName })
+                });
+                showToast('Profile name updated successfully!', 'success');
+                loadProfile();
+                // Refresh nav
+                checkAuth();
+            } catch (err) {
+                showToast(err.message || 'Failed to update profile', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Profile';
+            }
+        });
+
+        // Change Password
+        document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('change-password-btn');
+
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmNewPassword = document.getElementById('confirm-new-password').value;
+
+            if (newPassword !== confirmNewPassword) {
+                showToast('New passwords do not match. Please verify.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Updating Password...';
+
+            try {
+                const res = await apiRequest('/api/profile/password', {
+                    method: 'PUT',
+                    body: JSON.stringify({ currentPassword, newPassword, confirmNewPassword })
+                });
+                showToast(res.message || 'Password changed successfully!', 'success');
+                document.getElementById('change-password-form').reset();
+            } catch (err) {
+                showToast(err.message || 'Failed to change password', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Update Password';
+            }
+        });
+    </script>
+</body>
+</html>

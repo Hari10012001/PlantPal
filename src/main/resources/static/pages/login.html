@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - PlantPal</title>
+    <link rel="stylesheet" href="/css/plantpal.css">
+    <style>
+        .auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            padding: 1.5rem;
+        }
+        .auth-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            max-width: 420px;
+            width: 100%;
+            padding: 2.25rem;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .auth-title {
+            font-size: 1.8rem;
+            color: var(--primary-hover);
+            margin-bottom: 0.5rem;
+        }
+        .alert-box {
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.25rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar-custom">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">🌱 PlantPal</a>
+            <div class="navbar-nav">
+                <a href="/pages/register.html" class="nav-link">Create Account</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">Welcome Back</h1>
+                <p class="form-text-muted">Sign in to manage your plants & care schedule</p>
+            </div>
+
+            <div id="alert-error" class="alert-box alert-error"></div>
+            <div id="alert-success" class="alert-box alert-success"></div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" class="form-control-custom" placeholder="name@example.com" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" class="form-control-custom" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" id="submit-btn" class="btn-primary-custom" style="width: 100%; justify-content: center; margin-top: 1rem; padding: 0.75rem;">
+                    Sign In
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+                Don't have an account? <a href="/pages/register.html" style="font-weight: 600;">Sign up</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-custom">
+        PlantPal Platform &copy; 2026.
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        // Check if already authenticated
+        checkAuth();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('registered') === 'true') {
+            const s = document.getElementById('alert-success');
+            s.textContent = 'Account created successfully! Please sign in with your credentials.';
+            s.style.display = 'block';
+        } else if (urlParams.get('loggedOut') === 'true') {
+            const s = document.getElementById('alert-success');
+            s.textContent = 'You have been signed out successfully.';
+            s.style.display = 'block';
+        } else if (urlParams.get('expired') === 'true') {
+            const e = document.getElementById('alert-error');
+            e.textContent = 'Your session has expired. Please sign in again.';
+            e.style.display = 'block';
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errBox = document.getElementById('alert-error');
+            const successBox = document.getElementById('alert-success');
+            const submitBtn = document.getElementById('submit-btn');
+
+            errBox.style.display = 'none';
+            successBox.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing in...';
+
+            const payload = {
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const res = await apiRequest('/api/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                showToast(`Welcome back, ${res.fullName}!`, 'success');
+                setTimeout(() => {
+                    if (res.role === 'ADMIN') {
+                        window.location.href = '/pages/admin/stats.html';
+                    } else {
+                        window.location.href = '/pages/dashboard.html';
+                    }
+                }, 400);
+            } catch (err) {
+                errBox.textContent = err.message || 'Invalid email or password.';
+                errBox.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In';
+            }
+        });
+    </script>
+</body>
+</html>

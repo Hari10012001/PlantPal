@@ -1,0 +1,697 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Details - PlantPal</title>
+    <link rel="stylesheet" href="/css/plantpal.css">
+    <style>
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 900px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav id="main-navbar"></nav>
+
+    <div class="main-content">
+        <div style="margin-bottom: 1.5rem;">
+            <a href="/pages/plants.html" class="nav-link" style="padding-left: 0;">&larr; Back to My Plants</a>
+        </div>
+
+        <div class="card-custom">
+            <div class="card-header-flex" style="border-bottom: none; margin-bottom: 0;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <h1 id="plant-name" style="font-size: 2rem; margin-bottom: 0;">Plant Details</h1>
+                        <span id="plant-status-badge"></span>
+                        <span id="plant-watering-badge"></span>
+                    </div>
+                    <div id="plant-species" class="form-text-muted" style="font-size: 1rem; font-style: italic; margin-top: 0.25rem;"></div>
+                </div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn-outline-custom btn-sm" onclick="openEditPlantModal()">✏️ Edit Info</button>
+                    <button class="btn-danger-custom btn-sm" onclick="openDeletePlantModal()">🗑️ Delete Plant</button>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+                <div>
+                    <div class="stat-label">Category</div>
+                    <div id="plant-category" style="font-weight: 600; margin-top: 0.25rem;">-</div>
+                </div>
+                <div>
+                    <div class="stat-label">Location</div>
+                    <div id="plant-location" style="font-weight: 600; margin-top: 0.25rem;">-</div>
+                </div>
+                <div>
+                    <div class="stat-label">Added Date</div>
+                    <div id="plant-created-at" style="font-weight: 600; margin-top: 0.25rem;">-</div>
+                </div>
+                <div>
+                    <div class="stat-label">Health Status Action</div>
+                    <select id="quick-status-select" class="form-control-custom" style="padding: 0.35rem 0.5rem; margin-top: 0.25rem;" onchange="updatePlantStatus(this.value)">
+                        <option value="HEALTHY">🌿 Healthy</option>
+                        <option value="NEEDS_ATTENTION">⚠️ Needs Attention</option>
+                        <option value="INACTIVE">💤 Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="plant-desc-container" style="margin-top: 1rem; display: none;">
+                <div class="stat-label">Notes &amp; Description</div>
+                <p id="plant-description" style="color: var(--text-muted); margin-top: 0.25rem; font-size: 0.95rem;"></p>
+            </div>
+        </div>
+
+        <div class="detail-grid">
+            <div class="card-custom">
+                <div class="card-header-flex">
+                    <h3>💧 Care Schedule</h3>
+                    <button class="btn-outline-custom btn-sm" onclick="openCareModal()">✏️ Update Care</button>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="background: var(--bg-body); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                        <div class="stat-label">Watering Frequency</div>
+                        <div id="care-interval" style="font-size: 1.25rem; font-weight: 700; color: var(--primary-hover); margin-top: 0.25rem;">-</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div style="background: var(--bg-body); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                            <div class="stat-label">Last Watered</div>
+                            <div id="care-last-watered" style="font-weight: 600; margin-top: 0.25rem;">-</div>
+                        </div>
+                        <div style="background: var(--bg-body); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                            <div class="stat-label">Next Water Due</div>
+                            <div id="care-next-water" style="font-weight: 600; margin-top: 0.25rem;">-</div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div style="background: var(--bg-body); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                            <div class="stat-label">Sunlight Needs</div>
+                            <div id="care-sunlight" style="font-weight: 600; margin-top: 0.25rem;">Not Specified</div>
+                        </div>
+                        <div style="background: var(--bg-body); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                            <div class="stat-label">Fertilizing Interval</div>
+                            <div id="care-fertilize" style="font-weight: 600; margin-top: 0.25rem;">Not Specified</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-custom">
+                <div class="card-header-flex">
+                    <h3>🚿 Watering History</h3>
+                    <button class="btn-primary-custom btn-sm" onclick="openWaterModal()">➕ Log Watering</button>
+                </div>
+                <div id="watering-history-container">
+                    <p class="form-text-muted">Loading watering history...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-custom" style="margin-top: 1.5rem;">
+            <div class="card-header-flex">
+                <h3>📈 Growth &amp; Health Tracking Records</h3>
+                <button class="btn-primary-custom btn-sm" onclick="openGrowthModal()">➕ Log Growth Observation</button>
+            </div>
+            <div id="growth-history-container">
+                <p class="form-text-muted">Loading growth tracking observations...</p>
+            </div>
+        </div>
+    </div>
+    <!-- 1. Edit Plant Modal -->
+    <div id="edit-plant-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Plant Information</h3>
+                <button class="modal-close" onclick="closeEditPlantModal()">&times;</button>
+            </div>
+            <form id="edit-plant-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="edit-name">Plant Name *</label>
+                        <input type="text" id="edit-name" class="form-control-custom" required minlength="2" maxlength="100">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="edit-category">Category *</label>
+                            <select id="edit-category" class="form-control-custom" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="edit-status">Health Status *</label>
+                            <select id="edit-status" class="form-control-custom" required>
+                                <option value="HEALTHY">🌿 Healthy</option>
+                                <option value="NEEDS_ATTENTION">⚠️ Needs Attention</option>
+                                <option value="INACTIVE">💤 Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit-species">Species (Optional)</label>
+                        <input type="text" id="edit-species" class="form-control-custom" maxlength="150">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit-location">Location (Optional)</label>
+                        <input type="text" id="edit-location" class="form-control-custom" maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit-description">Description (Optional)</label>
+                        <textarea id="edit-description" class="form-control-custom" rows="2" maxlength="500"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" onclick="closeEditPlantModal()">Cancel</button>
+                    <button type="submit" id="edit-submit-btn" class="btn-primary-custom">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Delete Plant Modal -->
+    <div id="delete-plant-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: #ef4444;">Delete Plant</h3>
+                <button class="modal-close" onclick="closeDeletePlantModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="delete-plant-name">this plant</strong>?</p>
+                <p class="form-text-muted" style="margin-top: 0.5rem; color: #dc2626;">
+                    ⚠️ Warning: This action will permanently remove the plant along with all associated care schedules, watering records, and growth observations.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary-custom" onclick="closeDeletePlantModal()">Cancel</button>
+                <button type="button" id="confirm-delete-btn" class="btn-danger-custom" onclick="executeDeletePlant()">Confirm Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Update Care Schedule Modal -->
+    <div id="care-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Care Schedule</h3>
+                <button class="modal-close" onclick="closeCareModal()">&times;</button>
+            </div>
+            <form id="care-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="care-input-interval">Watering Interval (Days) *</label>
+                        <input type="number" id="care-input-interval" class="form-control-custom" min="1" max="365" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="care-input-last-watered">Last Watered Date (Optional)</label>
+                        <input type="date" id="care-input-last-watered" class="form-control-custom">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="care-input-sunlight">Sunlight Needs (Optional)</label>
+                        <input type="text" id="care-input-sunlight" class="form-control-custom" placeholder="e.g. Direct Sunlight, Partial Shade" maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="care-input-fertilize">Fertilizing Interval (Days, Optional)</label>
+                        <input type="number" id="care-input-fertilize" class="form-control-custom" min="1" max="365" placeholder="e.g. 30">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" onclick="closeCareModal()">Cancel</button>
+                    <button type="submit" id="care-submit-btn" class="btn-primary-custom">Save Schedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. Record Watering Modal -->
+    <div id="water-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Record Watering Event</h3>
+                <button class="modal-close" onclick="closeWaterModal()">&times;</button>
+            </div>
+            <form id="water-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="watered-date">Watered Date *</label>
+                        <input type="date" id="watered-date" class="form-control-custom" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="watered-notes">Notes (Optional)</label>
+                        <textarea id="watered-notes" class="form-control-custom" rows="2" maxlength="500" placeholder="e.g. Deep soak, added nutrients"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" onclick="closeWaterModal()">Cancel</button>
+                    <button type="submit" id="water-submit-btn" class="btn-primary-custom">Log Watering</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. Record Growth Modal -->
+    <div id="growth-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Record Growth Observation</h3>
+                <button class="modal-close" onclick="closeGrowthModal()">&times;</button>
+            </div>
+            <form id="growth-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="growth-date">Observation Date *</label>
+                        <input type="date" id="growth-date" class="form-control-custom" required>
+                    </div>
+                    <p class="form-text-muted" style="margin-bottom: 0.75rem;">Provide at least one observation field below:</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="growth-height">Height (cm)</label>
+                            <input type="number" step="0.01" id="growth-height" class="form-control-custom" placeholder="e.g. 24.5">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="growth-leaves">Leaf Count</label>
+                            <input type="number" id="growth-leaves" class="form-control-custom" placeholder="e.g. 12">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="growth-notes">Observation Notes</label>
+                        <textarea id="growth-notes" class="form-control-custom" rows="2" maxlength="500" placeholder="e.g. New shoot sprouting near top"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" onclick="closeGrowthModal()">Cancel</button>
+                    <button type="submit" id="growth-submit-btn" class="btn-primary-custom">Log Growth</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer-custom">
+        PlantPal Platform &copy; 2026.
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const plantId = urlParams.get('id');
+        let currentPlant = null;
+        let categories = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await checkAuth();
+            if (!plantId) {
+                window.location.href = '/pages/plants.html';
+                return;
+            }
+            if (user) {
+                await loadCategories();
+                loadPlantDetails();
+                loadCareSchedule();
+                loadWateringHistory();
+                loadGrowthHistory();
+            }
+        });
+
+        async function loadCategories() {
+            try {
+                categories = await apiRequest('/api/categories');
+                const catSelect = document.getElementById('edit-category');
+                catSelect.innerHTML = '';
+                categories.forEach(c => {
+                    catSelect.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+                });
+            } catch (err) {
+                showToast('Failed to load categories', 'error');
+            }
+        }
+
+        async function loadPlantDetails() {
+            try {
+                const plant = await apiRequest(`/api/plants/${plantId}`);
+                currentPlant = plant;
+
+                document.getElementById('plant-name').textContent = plant.name;
+                document.getElementById('plant-species').textContent = plant.species || 'No scientific name provided';
+                document.getElementById('plant-category').textContent = plant.categoryName || 'None';
+                document.getElementById('plant-location').textContent = plant.location || 'Not specified';
+                document.getElementById('plant-created-at').textContent = formatDate(plant.createdAt?.split('T')[0]);
+                document.getElementById('plant-status-badge').innerHTML = getStatusBadge(plant.status);
+                document.getElementById('plant-watering-badge').innerHTML = getWateringBadge(plant.wateringStatus);
+                document.getElementById('quick-status-select').value = plant.status;
+
+                if (plant.description) {
+                    document.getElementById('plant-description').textContent = plant.description;
+                    document.getElementById('plant-desc-container').style.display = 'block';
+                } else {
+                    document.getElementById('plant-desc-container').style.display = 'none';
+                }
+            } catch (err) {
+                showToast(err.message || 'Plant not found', 'error');
+                setTimeout(() => window.location.href = '/pages/plants.html', 1500);
+            }
+        }
+
+        async function loadCareSchedule() {
+            try {
+                const care = await apiRequest(`/api/plants/${plantId}/care`);
+                document.getElementById('care-interval').textContent = `Every ${care.wateringIntervalDays} Days`;
+                document.getElementById('care-last-watered').textContent = formatDate(care.lastWateredDate);
+                document.getElementById('care-next-water').textContent = formatDate(care.nextWateringDate);
+                document.getElementById('care-sunlight').textContent = care.sunlightNeeds || 'Not Specified';
+                document.getElementById('care-fertilize').textContent = care.fertilizingIntervalDays ? `Every ${care.fertilizingIntervalDays} Days` : 'Not Specified';
+            } catch (err) {
+                showToast('Failed to load care schedule', 'error');
+            }
+        }
+
+        async function loadWateringHistory() {
+            try {
+                const records = await apiRequest(`/api/plants/${plantId}/watering`);
+                const container = document.getElementById('watering-history-container');
+
+                if (!records || records.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="padding: 1.5rem 1rem; margin: 0.5rem 0;">
+                            <div class="empty-state-icon" style="font-size: 2rem; margin-bottom: 0.5rem;">🚿</div>
+                            <div class="empty-state-title" style="font-size: 1rem;">No watering records yet</div>
+                            <p class="empty-state-text" style="font-size: 0.85rem; margin-bottom: 0.75rem;">Log watering events to track plant hydration.</p>
+                            <button class="btn-primary-custom btn-sm" onclick="openWaterModal()">Log First Watering</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `
+                    <div class="table-responsive">
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                records.forEach(r => {
+                    html += `
+                        <tr>
+                            <td><strong>${formatDate(r.wateredDate)}</strong></td>
+                            <td class="form-text-muted">${escapeHtml(r.notes || '—')}</td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            } catch (err) {
+                showToast('Failed to load watering history', 'error');
+            }
+        }
+
+        async function loadGrowthHistory() {
+            try {
+                const records = await apiRequest(`/api/plants/${plantId}/growth`);
+                const container = document.getElementById('growth-history-container');
+
+                if (!records || records.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="padding: 1.5rem 1rem; margin: 0.5rem 0;">
+                            <div class="empty-state-icon" style="font-size: 2rem; margin-bottom: 0.5rem;">📏</div>
+                            <div class="empty-state-title" style="font-size: 1rem;">No growth records yet</div>
+                            <p class="empty-state-text" style="font-size: 0.85rem; margin-bottom: 0.75rem;">Record height and leaf count observations to monitor progress.</p>
+                            <button class="btn-primary-custom btn-sm" onclick="openGrowthModal()">Log Observation</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `
+                    <div class="table-responsive">
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Observation Date</th>
+                                    <th>Height (cm)</th>
+                                    <th>Leaf Count</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                records.forEach(r => {
+                    html += `
+                        <tr>
+                            <td><strong>${formatDate(r.recordDate)}</strong></td>
+                            <td>${r.heightCm != null ? `${r.heightCm} cm` : '—'}</td>
+                            <td>${r.leafCount != null ? `${r.leafCount} leaves` : '—'}</td>
+                            <td class="form-text-muted">${escapeHtml(r.notes || '—')}</td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            } catch (err) {
+                showToast('Failed to load growth tracking records', 'error');
+            }
+        }
+
+        // Status Switcher
+        async function updatePlantStatus(newStatus) {
+            try {
+                await apiRequest(`/api/plants/${plantId}/status`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                showToast(`Plant status updated to ${newStatus}`, 'success');
+                loadPlantDetails();
+            } catch (err) {
+                showToast(err.message || 'Failed to update plant status', 'error');
+            }
+        }
+
+        // Edit Plant Handlers
+        function openEditPlantModal() {
+            if (!currentPlant) return;
+            document.getElementById('edit-name').value = currentPlant.name;
+            document.getElementById('edit-category').value = currentPlant.categoryId;
+            document.getElementById('edit-status').value = currentPlant.status;
+            document.getElementById('edit-species').value = currentPlant.species || '';
+            document.getElementById('edit-location').value = currentPlant.location || '';
+            document.getElementById('edit-description').value = currentPlant.description || '';
+            document.getElementById('edit-plant-modal').classList.add('active');
+        }
+
+        function closeEditPlantModal() {
+            document.getElementById('edit-plant-modal').classList.remove('active');
+        }
+
+        document.getElementById('edit-plant-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('edit-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            const payload = {
+                name: document.getElementById('edit-name').value.trim(),
+                categoryId: parseInt(document.getElementById('edit-category').value),
+                status: document.getElementById('edit-status').value,
+                species: document.getElementById('edit-species').value.trim() || null,
+                location: document.getElementById('edit-location').value.trim() || null,
+                description: document.getElementById('edit-description').value.trim() || null
+            };
+
+            try {
+                await apiRequest(`/api/plants/${plantId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+                showToast('Plant details updated successfully!', 'success');
+                closeEditPlantModal();
+                loadPlantDetails();
+            } catch (err) {
+                showToast(err.message || 'Failed to update plant', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Changes';
+            }
+        });
+
+        // Delete Plant Handlers
+        function openDeletePlantModal() {
+            document.getElementById('delete-plant-name').textContent = currentPlant?.name || 'this plant';
+            document.getElementById('delete-plant-modal').classList.add('active');
+        }
+
+        function closeDeletePlantModal() {
+            document.getElementById('delete-plant-modal').classList.remove('active');
+        }
+
+        async function executeDeletePlant() {
+            const btn = document.getElementById('confirm-delete-btn');
+            btn.disabled = true;
+            btn.textContent = 'Deleting...';
+
+            try {
+                await apiRequest(`/api/plants/${plantId}`, { method: 'DELETE' });
+                showToast('Plant deleted successfully', 'info');
+                setTimeout(() => window.location.href = '/pages/plants.html', 1000);
+            } catch (err) {
+                showToast(err.message || 'Failed to delete plant', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Confirm Delete';
+            }
+        }
+
+        // Care Schedule Handlers
+        async function openCareModal() {
+            try {
+                const care = await apiRequest(`/api/plants/${plantId}/care`);
+                document.getElementById('care-input-interval').value = care.wateringIntervalDays || 7;
+                document.getElementById('care-input-last-watered').value = care.lastWateredDate || '';
+                document.getElementById('care-input-sunlight').value = care.sunlightNeeds || '';
+                document.getElementById('care-input-fertilize').value = care.fertilizingIntervalDays || '';
+                document.getElementById('care-modal').classList.add('active');
+            } catch (err) {
+                showToast('Failed to load care schedule for editing', 'error');
+            }
+        }
+
+        function closeCareModal() {
+            document.getElementById('care-modal').classList.remove('active');
+        }
+
+        document.getElementById('care-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('care-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            const fertVal = document.getElementById('care-input-fertilize').value;
+            const payload = {
+                wateringIntervalDays: parseInt(document.getElementById('care-input-interval').value),
+                lastWateredDate: document.getElementById('care-input-last-watered').value || null,
+                sunlightNeeds: document.getElementById('care-input-sunlight').value.trim() || null,
+                fertilizingIntervalDays: fertVal ? parseInt(fertVal) : null
+            };
+
+            try {
+                await apiRequest(`/api/plants/${plantId}/care`, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+                showToast('Care schedule updated successfully!', 'success');
+                closeCareModal();
+                loadCareSchedule();
+                loadPlantDetails();
+            } catch (err) {
+                showToast(err.message || 'Failed to update care schedule', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Schedule';
+            }
+        });
+
+        // Log Watering Handlers
+        function openWaterModal() {
+            document.getElementById('watered-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('watered-notes').value = '';
+            document.getElementById('water-modal').classList.add('active');
+        }
+
+        function closeWaterModal() {
+            document.getElementById('water-modal').classList.remove('active');
+        }
+
+        document.getElementById('water-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('water-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            const payload = {
+                wateredDate: document.getElementById('watered-date').value,
+                notes: document.getElementById('watered-notes').value.trim() || null
+            };
+
+            try {
+                await apiRequest(`/api/plants/${plantId}/watering`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                showToast('Watering recorded successfully!', 'success');
+                closeWaterModal();
+                loadWateringHistory();
+                loadCareSchedule();
+                loadPlantDetails();
+            } catch (err) {
+                showToast(err.message || 'Failed to log watering event', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Log Watering';
+            }
+        });
+
+        // Log Growth Handlers
+        function openGrowthModal() {
+            document.getElementById('growth-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('growth-height').value = '';
+            document.getElementById('growth-leaves').value = '';
+            document.getElementById('growth-notes').value = '';
+            document.getElementById('growth-modal').classList.add('active');
+        }
+
+        function closeGrowthModal() {
+            document.getElementById('growth-modal').classList.remove('active');
+        }
+
+        document.getElementById('growth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('growth-submit-btn');
+
+            const heightVal = document.getElementById('growth-height').value;
+            const leavesVal = document.getElementById('growth-leaves').value;
+            const notesVal = document.getElementById('growth-notes').value.trim();
+
+            if (!heightVal && !leavesVal && !notesVal) {
+                showToast('Please provide at least one observation field (height, leaves, or notes)', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            const payload = {
+                recordDate: document.getElementById('growth-date').value,
+                heightCm: heightVal ? parseFloat(heightVal) : null,
+                leafCount: leavesVal ? parseInt(leavesVal) : null,
+                notes: notesVal || null
+            };
+
+            try {
+                await apiRequest(`/api/plants/${plantId}/growth`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                showToast('Growth observation recorded!', 'success');
+                closeGrowthModal();
+                loadGrowthHistory();
+            } catch (err) {
+                showToast(err.message || 'Failed to log growth observation', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Log Growth';
+            }
+        });
+    </script>
+</body>
+</html>

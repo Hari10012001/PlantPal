@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Users - Admin - PlantPal</title>
+    <link rel="stylesheet" href="/css/plantpal.css">
+</head>
+<body>
+    <nav id="main-navbar"></nav>
+
+    <div class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.85rem;">Registered Users Overview</h1>
+                <p class="form-text-muted">Read-only view of all registered accounts and plant portfolios</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="/pages/admin/stats.html" class="btn-outline-custom btn-sm">📊 System Stats</a>
+                <a href="/pages/admin/categories.html" class="btn-outline-custom btn-sm">🏷️ Manage Categories</a>
+            </div>
+        </div>
+
+        <div class="card-custom">
+            <div class="card-header-flex">
+                <h3>👥 Registered User Directory</h3>
+                <span id="user-count-badge" class="badge-status badge-healthy">0 Registered</span>
+            </div>
+            <div id="users-table-container">
+                <p class="form-text-muted">Loading registered users...</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-custom">
+        PlantPal Platform &copy; 2026.
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await checkAuth('ADMIN');
+            if (user) {
+                loadAdminUsers();
+            }
+        });
+
+        async function loadAdminUsers() {
+            try {
+                const users = await apiRequest('/api/admin/users');
+                document.getElementById('user-count-badge').textContent = `${users.length} User${users.length === 1 ? '' : 's'}`;
+                renderUsersTable(users);
+            } catch (err) {
+                showToast(err.message || 'Failed to load user directory', 'error');
+            }
+        }
+
+        function renderUsersTable(users) {
+            const container = document.getElementById('users-table-container');
+            if (!users || users.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <div class="empty-state-title">No users registered</div>
+                        <p class="empty-state-text">No registered users found in the database.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Full Name</th>
+                                <th>Email Address</th>
+                                <th>Role</th>
+                                <th>Plants Tracked</th>
+                                <th>Registration Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            users.forEach(u => {
+                html += `
+                    <tr>
+                        <td><strong>#${u.id}</strong></td>
+                        <td><span style="font-weight: 700; color: var(--primary-hover);">${escapeHtml(u.fullName)}</span></td>
+                        <td>${escapeHtml(u.email)}</td>
+                        <td>
+                            <span class="badge-status ${u.role === 'ADMIN' ? 'badge-needs-attention' : 'badge-healthy'}">
+                                ${u.role}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-weight: 700; color: var(--primary-color);">
+                                ${u.plantCount} Plants
+                            </span>
+                        </td>
+                        <td class="form-text-muted">${formatDate(u.createdAt?.split('T')[0])}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

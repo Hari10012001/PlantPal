@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Plants - PlantPal</title>
+    <link rel="stylesheet" href="/css/plantpal.css">
+    <style>
+        .filter-bar {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-item {
+            flex: 1;
+            min-width: 200px;
+        }
+        .plant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+        .plant-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .plant-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .plant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+        .plant-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-hover);
+        }
+        .plant-species {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .plant-meta {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0.75rem 0;
+            line-height: 1.7;
+        }
+        .plant-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav id="main-navbar"></nav>
+
+    <div class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.85rem;">My Plant Collection</h1>
+                <p class="form-text-muted">Manage your plants, watering intervals, and health statuses</p>
+            </div>
+            <button class="btn-primary-custom" onclick="openAddPlantModal()">
+                <span>➕</span> Add New Plant
+            </button>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="filter-bar">
+            <div class="filter-item" style="flex: 2;">
+                <input type="text" id="search-input" class="form-control-custom" placeholder="🔍 Search plants by name, species, location...">
+            </div>
+            <div class="filter-item">
+                <select id="category-filter" class="form-control-custom">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <select id="status-filter" class="form-control-custom">
+                    <option value="">All Statuses</option>
+                    <option value="HEALTHY">🌿 Healthy</option>
+                    <option value="NEEDS_ATTENTION">⚠️ Needs Attention</option>
+                    <option value="INACTIVE">💤 Inactive</option>
+                </select>
+            </div>
+            <button class="btn-secondary-custom btn-sm" onclick="resetFilters()">Reset</button>
+        </div>
+
+        <!-- Plant Grid Container -->
+        <div id="plant-list-container">
+            <p class="form-text-muted">Loading plants...</p>
+        </div>
+    </div>
+
+    <!-- Add Plant Modal -->
+    <div id="add-plant-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Plant</h3>
+                <button class="modal-close" onclick="closeAddPlantModal()">&times;</button>
+            </div>
+            <form id="add-plant-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="plant-name">Plant Name *</label>
+                        <input type="text" id="plant-name" class="form-control-custom" placeholder="e.g. Sweet Basil" required minlength="2" maxlength="100">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="plant-category">Category *</label>
+                            <select id="plant-category" class="form-control-custom" required>
+                                <option value="">Select Category</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="plant-status">Health Status *</label>
+                            <select id="plant-status" class="form-control-custom" required>
+                                <option value="HEALTHY">🌿 Healthy</option>
+                                <option value="NEEDS_ATTENTION">⚠️ Needs Attention</option>
+                                <option value="INACTIVE">💤 Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="plant-interval">Watering Interval (Days) *</label>
+                            <input type="number" id="plant-interval" class="form-control-custom" min="1" max="365" value="7" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="plant-last-watered">Last Watered (Optional)</label>
+                            <input type="date" id="plant-last-watered" class="form-control-custom">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="plant-species">Species / Scientific Name (Optional)</label>
+                        <input type="text" id="plant-species" class="form-control-custom" placeholder="e.g. Ocimum basilicum" maxlength="150">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="plant-location">Location (Optional)</label>
+                        <input type="text" id="plant-location" class="form-control-custom" placeholder="e.g. Kitchen Window, Balcony" maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="plant-desc">Description / Care Notes (Optional)</label>
+                        <textarea id="plant-desc" class="form-control-custom" rows="2" maxlength="500" placeholder="Notes about light, soil, or pruning..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" onclick="closeAddPlantModal()">Cancel</button>
+                    <button type="submit" id="add-submit-btn" class="btn-primary-custom">Add Plant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Water Modal -->
+    <div id="water-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="water-modal-title">Record Watering</h3>
+                <button class="modal-close" onclick="closeWaterModal()">&times;</button>
+            </div>
+            <form id="water-form">
+                <div class="modal-body">
+                    <input type="hidden" id="water-plant-id">
+                    <div class="form-group">
+                        <label class="form-label" for="watered-date">Watered Date *</label>
+                        <input type="date" id="watered-date" class="form-control-custom" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="watered-notes">Notes (Optional)</label>
+                        <textarea id="watered-notes" class="form-control-custom" rows="2" maxlength="500" placeholder="e.g. Regular watering"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" onclick="closeWaterModal()">Cancel</button>
+                    <button type="submit" id="water-submit-btn" class="btn-primary-custom">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer-custom">
+        PlantPal Platform &copy; 2026.
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        let categoriesMap = {};
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await checkAuth();
+            if (user) {
+                await loadCategories();
+                loadPlants();
+
+                // Setup live search & filter listeners
+                let searchTimeout;
+                document.getElementById('search-input').addEventListener('input', () => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(loadPlants, 300);
+                });
+                document.getElementById('category-filter').addEventListener('change', loadPlants);
+                document.getElementById('status-filter').addEventListener('change', loadPlants);
+            }
+        });
+
+        async function loadCategories() {
+            try {
+                const categories = await apiRequest('/api/categories');
+                const catFilter = document.getElementById('category-filter');
+                const catModal = document.getElementById('plant-category');
+
+                categories.forEach(c => {
+                    categoriesMap[c.id] = c.name;
+                    catFilter.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+                    catModal.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+                });
+            } catch (err) {
+                showToast('Failed to load categories', 'error');
+            }
+        }
+
+        async function loadPlants() {
+            const search = document.getElementById('search-input').value.trim();
+            const categoryId = document.getElementById('category-filter').value;
+            const status = document.getElementById('status-filter').value;
+
+            const params = new URLSearchParams();
+            if (search) params.append('search', search);
+            if (categoryId) params.append('categoryId', categoryId);
+            if (status) params.append('status', status);
+
+            try {
+                const url = `/api/plants${params.toString() ? '?' + params.toString() : ''}`;
+                const plants = await apiRequest(url);
+                renderPlants(plants);
+            } catch (err) {
+                showToast(err.message || 'Failed to load plants', 'error');
+            }
+        }
+
+        function renderPlants(plants) {
+            const container = document.getElementById('plant-list-container');
+            if (!plants || plants.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🪴</div>
+                        <div class="empty-state-title">No plants found</div>
+                        <p class="empty-state-text">No plants match your current filter criteria or you haven't added any yet.</p>
+                        <button class="btn-primary-custom btn-sm" onclick="openAddPlantModal()">Add New Plant</button>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="plant-grid">';
+            plants.forEach(p => {
+                html += `
+                    <div class="plant-card">
+                        <div>
+                            <div class="plant-header">
+                                <div>
+                                    <div class="plant-name">${escapeHtml(p.name)}</div>
+                                    <div class="plant-species">${escapeHtml(p.species || 'Unspecified species')}</div>
+                                </div>
+                                ${getStatusBadge(p.status)}
+                            </div>
+
+                            <div class="plant-meta">
+                                <div>🏷️ <strong>Category:</strong> ${escapeHtml(p.categoryName || 'None')}</div>
+                                <div>📍 <strong>Location:</strong> ${escapeHtml(p.location || 'Not specified')}</div>
+                                <div>💧 <strong>Watering Status:</strong> ${getWateringBadge(p.wateringStatus)}</div>
+                                <div>📅 <strong>Next Due:</strong> ${formatDate(p.nextWateringDate)}</div>
+                            </div>
+                        </div>
+
+                        <div class="plant-footer">
+                            <button class="btn-outline-custom btn-sm" onclick="openWaterModal(${p.id}, '${escapeHtml(p.name)}')">
+                                💧 Quick Water
+                            </button>
+                            <a href="/pages/plant-detail.html?id=${p.id}" class="btn-primary-custom btn-sm">
+                                View Details &rarr;
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('category-filter').value = '';
+            document.getElementById('status-filter').value = '';
+            loadPlants();
+        }
+
+        // Add Plant Modal Handlers
+        function openAddPlantModal() {
+            document.getElementById('add-plant-form').reset();
+            document.getElementById('plant-interval').value = 7;
+            document.getElementById('plant-status').value = 'HEALTHY';
+            document.getElementById('add-plant-modal').classList.add('active');
+        }
+
+        function closeAddPlantModal() {
+            document.getElementById('add-plant-modal').classList.remove('active');
+        }
+
+        document.getElementById('add-plant-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('add-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+
+            const payload = {
+                name: document.getElementById('plant-name').value.trim(),
+                categoryId: parseInt(document.getElementById('plant-category').value),
+                status: document.getElementById('plant-status').value,
+                wateringIntervalDays: parseInt(document.getElementById('plant-interval').value),
+                species: document.getElementById('plant-species').value.trim() || null,
+                location: document.getElementById('plant-location').value.trim() || null,
+                description: document.getElementById('plant-desc').value.trim() || null,
+                lastWateredDate: document.getElementById('plant-last-watered').value || null
+            };
+
+            try {
+                await apiRequest('/api/plants', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                showToast('Plant created successfully!', 'success');
+                closeAddPlantModal();
+                loadPlants();
+            } catch (err) {
+                showToast(err.message || 'Failed to add plant', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Add Plant';
+            }
+        });
+
+        // Quick Water Handlers
+        function openWaterModal(plantId, plantName) {
+            document.getElementById('water-plant-id').value = plantId;
+            document.getElementById('water-modal-title').textContent = `Record Watering: ${plantName}`;
+            document.getElementById('watered-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('watered-notes').value = '';
+            document.getElementById('water-modal').classList.add('active');
+        }
+
+        function closeWaterModal() {
+            document.getElementById('water-modal').classList.remove('active');
+        }
+
+        document.getElementById('water-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const plantId = document.getElementById('water-plant-id').value;
+            const wateredDate = document.getElementById('watered-date').value;
+            const notes = document.getElementById('watered-notes').value.trim();
+
+            const btn = document.getElementById('water-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                await apiRequest(`/api/plants/${plantId}/watering`, {
+                    method: 'POST',
+                    body: JSON.stringify({ wateredDate, notes: notes || null })
+                });
+                showToast('Watering recorded successfully!', 'success');
+                closeWaterModal();
+                loadPlants();
+            } catch (err) {
+                showToast(err.message || 'Failed to record watering', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Record';
+            }
+        });
+    </script>
+</body>
+</html>

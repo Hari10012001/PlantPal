@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Statistics - Admin - PlantPal</title>
+    <link rel="stylesheet" href="/css/plantpal.css">
+</head>
+<body>
+    <nav id="main-navbar"></nav>
+
+    <div class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.85rem;">Platform Administration</h1>
+                <p class="form-text-muted">System-wide platform overview, metrics, and health statistics</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="/pages/admin/categories.html" class="btn-outline-custom btn-sm">🏷️ Manage Categories</a>
+                <a href="/pages/admin/users.html" class="btn-outline-custom btn-sm">👥 View Users</a>
+            </div>
+        </div>
+
+        <!-- 5 System Stat Cards Grid -->
+        <div class="stats-grid">
+            <div class="stat-card stat-info">
+                <div class="stat-label">Total Users</div>
+                <div id="stat-total-users" class="stat-number">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Plants</div>
+                <div id="stat-total-plants" class="stat-number">0</div>
+            </div>
+            <div class="stat-card stat-warning">
+                <div class="stat-label">Plant Categories</div>
+                <div id="stat-total-categories" class="stat-number">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Watering Logs</div>
+                <div id="stat-total-water" class="stat-number">0</div>
+            </div>
+            <div class="stat-card stat-info">
+                <div class="stat-label">Growth Logs</div>
+                <div id="stat-total-growth" class="stat-number">0</div>
+            </div>
+        </div>
+
+        <!-- Plant Health Distribution -->
+        <div class="card-custom">
+            <div class="card-header-flex">
+                <h3>🌿 System-Wide Plant Health Breakdown</h3>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;">
+                <div style="background: var(--status-healthy-bg); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid #a7f3d0;">
+                    <div style="font-size: 0.9rem; font-weight: 700; color: var(--status-healthy-text); text-transform: uppercase;">🌿 Healthy Plants</div>
+                    <div id="breakdown-healthy" style="font-size: 2.2rem; font-weight: 800; color: var(--status-healthy-text); margin-top: 0.25rem;">0</div>
+                </div>
+                <div style="background: var(--status-attention-bg); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid #fde68a;">
+                    <div style="font-size: 0.9rem; font-weight: 700; color: var(--status-attention-text); text-transform: uppercase;">⚠️ Needs Attention</div>
+                    <div id="breakdown-attention" style="font-size: 2.2rem; font-weight: 800; color: var(--status-attention-text); margin-top: 0.25rem;">0</div>
+                </div>
+                <div style="background: var(--status-inactive-bg); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid #e5e7eb;">
+                    <div style="font-size: 0.9rem; font-weight: 700; color: var(--status-inactive-text); text-transform: uppercase;">💤 Inactive / Archived</div>
+                    <div id="breakdown-inactive" style="font-size: 2.2rem; font-weight: 800; color: var(--status-inactive-text); margin-top: 0.25rem;">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-custom">
+        PlantPal Platform &copy; 2026.
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await checkAuth('ADMIN');
+            if (user) {
+                loadAdminStats();
+            }
+        });
+
+        async function loadAdminStats() {
+            try {
+                const stats = await apiRequest('/api/admin/stats');
+                document.getElementById('stat-total-users').textContent = stats.totalUsers || 0;
+                document.getElementById('stat-total-plants').textContent = stats.totalPlants || 0;
+                document.getElementById('stat-total-categories').textContent = stats.totalCategories || 0;
+                document.getElementById('stat-total-water').textContent = stats.totalWateringRecords || 0;
+                document.getElementById('stat-total-growth').textContent = stats.totalGrowthRecords || 0;
+
+                const breakdown = stats.plantsByStatus || {};
+                document.getElementById('breakdown-healthy').textContent = breakdown.HEALTHY || 0;
+                document.getElementById('breakdown-attention').textContent = breakdown.NEEDS_ATTENTION || 0;
+                document.getElementById('breakdown-inactive').textContent = breakdown.INACTIVE || 0;
+            } catch (err) {
+                showToast(err.message || 'Failed to load system statistics', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

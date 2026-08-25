@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - PlantPal</title>
+    <link rel="stylesheet" href="/css/plantpal.css">
+</head>
+<body>
+    <nav id="main-navbar"></nav>
+
+    <div class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.85rem;">Plant Care Dashboard</h1>
+                <p class="form-text-muted">Overview of your botanical collection and care schedules</p>
+            </div>
+            <a href="/pages/plants.html" class="btn-primary-custom">
+                <span>➕</span> Add New Plant
+            </a>
+        </div>
+
+        <!-- 4 Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Plants</div>
+                <div id="stat-total" class="stat-number">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Healthy Plants</div>
+                <div id="stat-healthy" class="stat-number" style="color: #059669;">0</div>
+            </div>
+            <div class="stat-card stat-warning">
+                <div class="stat-label">Needs Attention</div>
+                <div id="stat-attention" class="stat-number" style="color: #d97706;">0</div>
+            </div>
+            <div class="stat-card stat-alert">
+                <div class="stat-label">Inactive Plants</div>
+                <div id="stat-inactive" class="stat-number" style="color: #6b7280;">0</div>
+            </div>
+        </div>
+
+        <!-- Care Alerts Row -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 2rem;">
+            <div class="card-custom" style="border-left: 5px solid #ef4444; margin-bottom: 0;">
+                <div class="card-header-flex" style="border-bottom: none; margin-bottom: 0;">
+                    <div>
+                        <div class="stat-label" style="color: #ef4444;">🚨 Overdue for Water</div>
+                        <h3 id="stat-overdue" style="font-size: 1.75rem; color: #b91c1c; margin-top: 0.25rem;">0 Plants</h3>
+                    </div>
+                    <a href="/pages/plants.html" class="btn-outline-custom btn-sm">Review Plants</a>
+                </div>
+            </div>
+            <div class="card-custom" style="border-left: 5px solid #3b82f6; margin-bottom: 0;">
+                <div class="card-header-flex" style="border-bottom: none; margin-bottom: 0;">
+                    <div>
+                        <div class="stat-label" style="color: #2563eb;">💧 Due Today</div>
+                        <h3 id="stat-today" style="font-size: 1.75rem; color: #1d4ed8; margin-top: 0.25rem;">0 Plants</h3>
+                    </div>
+                    <a href="/pages/plants.html" class="btn-outline-custom btn-sm">Review Plants</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Columns: Upcoming Care (7 days) & Recently Added Plants -->
+        <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.5rem;">
+            <!-- Upcoming Care (Next 7 Days) -->
+            <div class="card-custom">
+                <div class="card-header-flex">
+                    <h3>📅 Upcoming Care (Next 7 Days)</h3>
+                </div>
+                <div id="upcoming-care-container">
+                    <p class="form-text-muted">Loading upcoming care schedule...</p>
+                </div>
+            </div>
+
+            <!-- Recent Plants (Top 5) -->
+            <div class="card-custom">
+                <div class="card-header-flex">
+                    <h3>🌿 Recent Plants</h3>
+                    <a href="/pages/plants.html" class="nav-link" style="font-size: 0.85rem;">View All &rarr;</a>
+                </div>
+                <div id="recent-plants-container">
+                    <p class="form-text-muted">Loading recent plants...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Water Modal -->
+    <div id="water-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="water-modal-title">Record Watering</h3>
+                <button class="modal-close" onclick="closeWaterModal()">&times;</button>
+            </div>
+            <form id="water-form">
+                <div class="modal-body">
+                    <input type="hidden" id="water-plant-id">
+                    <div class="form-group">
+                        <label class="form-label" for="watered-date">Watered Date *</label>
+                        <input type="date" id="watered-date" class="form-control-custom" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="watered-notes">Notes (Optional)</label>
+                        <textarea id="watered-notes" class="form-control-custom" rows="2" maxlength="500" placeholder="e.g. Added liquid fertilizer"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" onclick="closeWaterModal()">Cancel</button>
+                    <button type="submit" id="water-submit-btn" class="btn-primary-custom">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer-custom">
+        PlantPal Platform &copy; 2026.
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await checkAuth();
+            if (user) {
+                loadDashboardData();
+            }
+        });
+
+        async function loadDashboardData() {
+            try {
+                const data = await apiRequest('/api/dashboard');
+
+                // Fill Stat Counters
+                document.getElementById('stat-total').textContent = data.totalPlants || 0;
+                document.getElementById('stat-healthy').textContent = data.healthyPlants || 0;
+                document.getElementById('stat-attention').textContent = data.needsAttentionPlants || 0;
+                document.getElementById('stat-inactive').textContent = data.inactivePlants || 0;
+                document.getElementById('stat-overdue').textContent = `${data.overdueCount || 0} Plant${data.overdueCount === 1 ? '' : 's'}`;
+                document.getElementById('stat-today').textContent = `${data.waterTodayCount || 0} Plant${data.waterTodayCount === 1 ? '' : 's'}`;
+
+                // Render Upcoming Care (7 Days)
+                renderUpcomingCare(data.upcomingCare || []);
+
+                // Render Recent Plants (Top 5)
+                renderRecentPlants(data.recentPlants || []);
+            } catch (err) {
+                showToast(err.message || 'Failed to load dashboard data', 'error');
+            }
+        }
+
+        function renderUpcomingCare(items) {
+            const container = document.getElementById('upcoming-care-container');
+            if (!items || items.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="padding: 1.5rem 1rem; margin: 0.5rem 0;">
+                        <div class="empty-state-icon" style="font-size: 2rem; margin-bottom: 0.5rem;">🎉</div>
+                        <div class="empty-state-title" style="font-size: 1rem;">All caught up!</div>
+                        <p class="empty-state-text" style="font-size: 0.85rem; margin-bottom: 0;">No plants require watering in the next 7 days.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th>Plant</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            items.forEach(item => {
+                html += `
+                    <tr>
+                        <td>
+                            <a href="/pages/plant-detail.html?id=${item.plantId}" style="font-weight: 700;">
+                                ${escapeHtml(item.plantName)}
+                            </a>
+                        </td>
+                        <td>${formatDate(item.nextWateringDate)}</td>
+                        <td>${getWateringBadge(item.wateringStatus)}</td>
+                        <td style="text-align: right;">
+                            <button class="btn-primary-custom btn-sm" onclick="openWaterModal(${item.plantId}, '${escapeHtml(item.plantName)}')">
+                                💧 Water
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function renderRecentPlants(plants) {
+            const container = document.getElementById('recent-plants-container');
+            if (!plants || plants.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="padding: 1.5rem 1rem; margin: 0.5rem 0;">
+                        <div class="empty-state-icon" style="font-size: 2rem; margin-bottom: 0.5rem;">🌱</div>
+                        <div class="empty-state-title" style="font-size: 1rem;">No plants added yet</div>
+                        <p class="empty-state-text" style="font-size: 0.85rem; margin-bottom: 1rem;">Add your first plant to get started!</p>
+                        <a href="/pages/plants.html" class="btn-primary-custom btn-sm">Add Plant</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th>Plant</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            plants.forEach(p => {
+                html += `
+                    <tr>
+                        <td>
+                            <a href="/pages/plant-detail.html?id=${p.id}" style="font-weight: 700;">
+                                ${escapeHtml(p.name)}
+                            </a>
+                        </td>
+                        <td><span class="form-text-muted" style="font-size: 0.85rem;">${escapeHtml(p.categoryName || 'None')}</span></td>
+                        <td>${getStatusBadge(p.status)}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // Quick Water Modal Logic
+        function openWaterModal(plantId, plantName) {
+            document.getElementById('water-plant-id').value = plantId;
+            document.getElementById('water-modal-title').textContent = `Record Watering: ${plantName}`;
+            document.getElementById('watered-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('watered-notes').value = '';
+            document.getElementById('water-modal').classList.add('active');
+        }
+
+        function closeWaterModal() {
+            document.getElementById('water-modal').classList.remove('active');
+        }
+
+        document.getElementById('water-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const plantId = document.getElementById('water-plant-id').value;
+            const wateredDate = document.getElementById('watered-date').value;
+            const notes = document.getElementById('watered-notes').value.trim();
+
+            const btn = document.getElementById('water-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                await apiRequest(`/api/plants/${plantId}/watering`, {
+                    method: 'POST',
+                    body: JSON.stringify({ wateredDate, notes: notes || null })
+                });
+                showToast('Watering recorded successfully!', 'success');
+                closeWaterModal();
+                loadDashboardData();
+            } catch (err) {
+                showToast(err.message || 'Failed to record watering', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Record';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Categories - Admin - PlantPal</title>
+    <link rel="stylesheet" href="/css/plantpal.css">
+</head>
+<body>
+    <nav id="main-navbar"></nav>
+
+    <div class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.85rem;">Plant Categories Management</h1>
+                <p class="form-text-muted">Administer taxonomic categories available across the platform</p>
+            </div>
+            <button class="btn-primary-custom" onclick="openAddCategoryModal()">
+                <span>➕</span> Add New Category
+            </button>
+        </div>
+
+        <div class="card-custom">
+            <div class="card-header-flex">
+                <h3>🏷️ All Plant Categories</h3>
+            </div>
+            <div id="categories-table-container">
+                <p class="form-text-muted">Loading categories...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div id="add-cat-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Plant Category</h3>
+                <button class="modal-close" onclick="closeAddCategoryModal()">&times;</button>
+            </div>
+            <form id="add-cat-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="add-cat-name">Category Name *</label>
+                        <input type="text" id="add-cat-name" class="form-control-custom" placeholder="e.g. Bonsai" required minlength="2" maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="add-cat-desc">Description (Optional)</label>
+                        <textarea id="add-cat-desc" class="form-control-custom" rows="2" maxlength="255" placeholder="Description of this category..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" onclick="closeAddCategoryModal()">Cancel</button>
+                    <button type="submit" id="add-cat-btn" class="btn-primary-custom">Create Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div id="edit-cat-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Category</h3>
+                <button class="modal-close" onclick="closeEditCategoryModal()">&times;</button>
+            </div>
+            <form id="edit-cat-form">
+                <div class="modal-body">
+                    <input type="hidden" id="edit-cat-id">
+                    <div class="form-group">
+                        <label class="form-label" for="edit-cat-name">Category Name *</label>
+                        <input type="text" id="edit-cat-name" class="form-control-custom" required minlength="2" maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit-cat-desc">Description (Optional)</label>
+                        <textarea id="edit-cat-desc" class="form-control-custom" rows="2" maxlength="255"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" onclick="closeEditCategoryModal()">Cancel</button>
+                    <button type="submit" id="edit-cat-btn" class="btn-primary-custom">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Category Modal -->
+    <div id="delete-cat-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: #ef4444;">Delete Category</h3>
+                <button class="modal-close" onclick="closeDeleteCategoryModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete category <strong id="delete-cat-name">-</strong>?</p>
+                <p class="form-text-muted" style="margin-top: 0.5rem;">
+                    Note: Categories currently referenced by existing user plants cannot be deleted (409 Conflict protection).
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary-custom" onclick="closeDeleteCategoryModal()">Cancel</button>
+                <button type="button" id="confirm-delete-cat-btn" class="btn-danger-custom" onclick="executeDeleteCategory()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-custom">
+        PlantPal Platform &copy; 2026.
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        let allCategories = [];
+        let deleteTargetId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await checkAuth('ADMIN');
+            if (user) {
+                loadAdminCategories();
+            }
+        });
+
+        async function loadAdminCategories() {
+            try {
+                const cats = await apiRequest('/api/admin/categories');
+                allCategories = cats;
+                renderCategoriesTable(cats);
+            } catch (err) {
+                showToast(err.message || 'Failed to load categories', 'error');
+            }
+        }
+
+        function renderCategoriesTable(cats) {
+            const container = document.getElementById('categories-table-container');
+            if (!cats || cats.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🏷️</div>
+                        <div class="empty-state-title">No categories found</div>
+                        <p class="empty-state-text">Create your first plant category using the button above.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Plants Using</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            cats.forEach(c => {
+                html += `
+                    <tr>
+                        <td><strong>#${c.id}</strong></td>
+                        <td><span style="font-weight: 700; color: var(--primary-hover);">${escapeHtml(c.name)}</span></td>
+                        <td class="form-text-muted">${escapeHtml(c.description || '—')}</td>
+                        <td>
+                            <span class="badge-status ${c.plantCount > 0 ? 'badge-healthy' : 'badge-inactive'}">
+                                ${c.plantCount} Plants
+                            </span>
+                        </td>
+                        <td style="text-align: right;">
+                            <button class="btn-outline-custom btn-sm" onclick="openEditCategoryModal(${c.id})">✏️ Edit</button>
+                            <button class="btn-danger-custom btn-sm" onclick="openDeleteCategoryModal(${c.id}, '${escapeHtml(c.name)}')">🗑️ Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // Add Handlers
+        function openAddCategoryModal() {
+            document.getElementById('add-cat-form').reset();
+            document.getElementById('add-cat-modal').classList.add('active');
+        }
+
+        function closeAddCategoryModal() {
+            document.getElementById('add-cat-modal').classList.remove('active');
+        }
+
+        document.getElementById('add-cat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('add-cat-btn');
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+
+            const name = document.getElementById('add-cat-name').value.trim();
+            const description = document.getElementById('add-cat-desc').value.trim() || null;
+
+            try {
+                await apiRequest('/api/admin/categories', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, description })
+                });
+                showToast('Category created successfully!', 'success');
+                closeAddCategoryModal();
+                loadAdminCategories();
+            } catch (err) {
+                showToast(err.message || 'Failed to create category', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Category';
+            }
+        });
+
+        // Edit Handlers
+        function openEditCategoryModal(id) {
+            const cat = allCategories.find(c => c.id === id);
+            if (!cat) return;
+            document.getElementById('edit-cat-id').value = cat.id;
+            document.getElementById('edit-cat-name').value = cat.name;
+            document.getElementById('edit-cat-desc').value = cat.description || '';
+            document.getElementById('edit-cat-modal').classList.add('active');
+        }
+
+        function closeEditCategoryModal() {
+            document.getElementById('edit-cat-modal').classList.remove('active');
+        }
+
+        document.getElementById('edit-cat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('edit-cat-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            const id = document.getElementById('edit-cat-id').value;
+            const name = document.getElementById('edit-cat-name').value.trim();
+            const description = document.getElementById('edit-cat-desc').value.trim() || null;
+
+            try {
+                await apiRequest(`/api/admin/categories/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ name, description })
+                });
+                showToast('Category updated successfully!', 'success');
+                closeEditCategoryModal();
+                loadAdminCategories();
+            } catch (err) {
+                showToast(err.message || 'Failed to update category', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Changes';
+            }
+        });
+
+        // Delete Handlers
+        function openDeleteCategoryModal(id, name) {
+            deleteTargetId = id;
+            document.getElementById('delete-cat-name').textContent = name;
+            document.getElementById('delete-cat-modal').classList.add('active');
+        }
+
+        function closeDeleteCategoryModal() {
+            deleteTargetId = null;
+            document.getElementById('delete-cat-modal').classList.remove('active');
+        }
+
+        async function executeDeleteCategory() {
+            if (!deleteTargetId) return;
+            const btn = document.getElementById('confirm-delete-cat-btn');
+            btn.disabled = true;
+            btn.textContent = 'Deleting...';
+
+            try {
+                await apiRequest(`/api/admin/categories/${deleteTargetId}`, { method: 'DELETE' });
+                showToast('Category deleted successfully!', 'info');
+                closeDeleteCategoryModal();
+                loadAdminCategories();
+            } catch (err) {
+                showToast(err.message || 'Cannot delete category in use', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Delete';
+            }
+        }
+    </script>
+</body>
+</html>

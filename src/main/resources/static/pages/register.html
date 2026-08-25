@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - PlantPal</title>
+    <link rel="stylesheet" href="/css/plantpal.css">
+    <style>
+        .auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            padding: 1.5rem;
+        }
+        .auth-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            max-width: 440px;
+            width: 100%;
+            padding: 2.25rem;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 1.75rem;
+        }
+        .auth-title {
+            font-size: 1.8rem;
+            color: var(--primary-hover);
+            margin-bottom: 0.5rem;
+        }
+        .alert-box {
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.25rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar-custom">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">🌱 PlantPal</a>
+            <div class="navbar-nav">
+                <a href="/pages/login.html" class="nav-link">Sign In</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">Create Account</h1>
+                <p class="form-text-muted">Start tracking your personal garden in seconds</p>
+            </div>
+
+            <div id="alert-error" class="alert-box alert-error"></div>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label class="form-label" for="fullName">Full Name</label>
+                    <input type="text" id="fullName" class="form-control-custom" placeholder="e.g. Hariharan P" required minlength="2" maxlength="100" autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" class="form-control-custom" placeholder="name@example.com" required maxlength="150">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" class="form-control-custom" placeholder="At least 6 characters" required minlength="6" maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" class="form-control-custom" placeholder="Re-enter password" required minlength="6" maxlength="100">
+                </div>
+
+                <button type="submit" id="submit-btn" class="btn-primary-custom" style="width: 100%; justify-content: center; margin-top: 1rem; padding: 0.75rem;">
+                    Register
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+                Already have an account? <a href="/pages/login.html" style="font-weight: 600;">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-custom">
+        PlantPal Platform &copy; 2026.
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        checkAuth();
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errBox = document.getElementById('alert-error');
+            const submitBtn = document.getElementById('submit-btn');
+
+            errBox.style.display = 'none';
+
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                errBox.textContent = 'Passwords do not match. Please verify.';
+                errBox.style.display = 'block';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating Account...';
+
+            const payload = {
+                fullName,
+                email,
+                password,
+                confirmPassword
+            };
+
+            try {
+                await apiRequest('/api/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                // Separate login flow as required by Decision 11
+                window.location.href = '/pages/login.html?registered=true';
+            } catch (err) {
+                if (err.errors) {
+                    const firstField = Object.keys(err.errors)[0];
+                    errBox.textContent = `${err.errors[firstField]}`;
+                } else {
+                    errBox.textContent = err.message || 'Failed to register account.';
+                }
+                errBox.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Register';
+            }
+        });
+    </script>
+</body>
+</html>
