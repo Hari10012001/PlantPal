@@ -15,6 +15,8 @@ public interface PlantRepository extends JpaRepository<Plant, Long> {
 
     List<Plant> findByUserId(Long userId);
 
+    List<Plant> findByUserIdOrderByCreatedAtDesc(Long userId);
+
     Optional<Plant> findByIdAndUserId(Long id, Long userId);
 
     boolean existsByIdAndUserId(Long id, Long userId);
