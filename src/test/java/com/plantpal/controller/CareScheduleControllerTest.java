@@ -14,6 +14,7 @@ import com.plantpal.repository.CareScheduleRepository;
 import com.plantpal.repository.PlantCategoryRepository;
 import com.plantpal.repository.PlantRepository;
 import com.plantpal.repository.UserRepository;
+import com.plantpal.repository.WateringRecordRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,9 @@ class CareScheduleControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
+    private WateringRecordRepository wateringRecordRepository;
+
+    @Autowired
     private CareScheduleRepository careScheduleRepository;
 
     @Autowired
@@ -66,6 +70,7 @@ class CareScheduleControllerTest {
 
     @BeforeEach
     void setUp() {
+        wateringRecordRepository.deleteAll();
         careScheduleRepository.deleteAll();
         plantRepository.deleteAll();
         categoryRepository.deleteAll();

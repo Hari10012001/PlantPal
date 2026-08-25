@@ -3,6 +3,8 @@ package com.plantpal.entity;
 import com.plantpal.enums.PlantStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "plants")
@@ -22,6 +24,9 @@ public class Plant {
 
     @OneToOne(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private CareSchedule careSchedule;
+
+    @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<WateringRecord> wateringRecords = new ArrayList<>();
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -103,6 +108,14 @@ public class Plant {
 
     public void setCareSchedule(CareSchedule careSchedule) {
         this.careSchedule = careSchedule;
+    }
+
+    public List<WateringRecord> getWateringRecords() {
+        return wateringRecords;
+    }
+
+    public void setWateringRecords(List<WateringRecord> wateringRecords) {
+        this.wateringRecords = wateringRecords;
     }
 
     public String getName() {

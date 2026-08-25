@@ -1,7 +1,6 @@
 package com.plantpal.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.plantpal.dto.request.CategoryRequest;
 import com.plantpal.dto.request.PlantRequest;
 import com.plantpal.dto.request.PlantStatusRequest;
 import com.plantpal.entity.Plant;
@@ -9,9 +8,11 @@ import com.plantpal.entity.PlantCategory;
 import com.plantpal.entity.User;
 import com.plantpal.enums.PlantStatus;
 import com.plantpal.enums.Role;
+import com.plantpal.repository.CareScheduleRepository;
 import com.plantpal.repository.PlantCategoryRepository;
 import com.plantpal.repository.PlantRepository;
 import com.plantpal.repository.UserRepository;
+import com.plantpal.repository.WateringRecordRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,12 @@ class PlantControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
+    private WateringRecordRepository wateringRecordRepository;
+
+    @Autowired
+    private CareScheduleRepository careScheduleRepository;
+
+    @Autowired
     private PlantRepository plantRepository;
 
     @Autowired
@@ -59,6 +66,8 @@ class PlantControllerTest {
 
     @BeforeEach
     void setUp() {
+        wateringRecordRepository.deleteAll();
+        careScheduleRepository.deleteAll();
         plantRepository.deleteAll();
         categoryRepository.deleteAll();
         userRepository.deleteAll();

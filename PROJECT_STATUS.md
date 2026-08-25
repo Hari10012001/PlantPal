@@ -1,13 +1,13 @@
 # PROJECT_STATUS.md
 ## PlantPal - Personal Plant Care, Watering Schedule and Growth Monitoring Platform
-## Version 11 — Milestone 5 Completed
+## Version 12 — Milestone 6 Completed
 
 ---
 
 ## Current Phase
 
-Milestone 5 (Care Schedules Management) COMPLETE.
-Status: MILESTONE 5 VERIFIED AND COMPLETED — Awaiting Approval for Milestone 6
+Milestone 6 (Watering Records & History Management) COMPLETE.
+Status: MILESTONE 6 VERIFIED AND COMPLETED — Awaiting Approval for Milestone 7
 Last Updated: 2026-08-25
 
 ---
@@ -23,19 +23,17 @@ Last Updated: 2026-08-25
 - Default Admin account seeded idempotently via `ADMIN_PASSWORD` env var (`admin@plantpal.local`).
 - Plant Categories module fully implemented strictly per the approved 27-endpoint API contract.
 - Plant CRUD & User Ownership Management module fully implemented with strict anti-enumeration 404 security.
-- **Care Schedules Management module fully implemented:**
-  - `CareSchedule` entity & `care_schedules` table with 1-to-1 unique foreign key to `plants(id)`
-  - `SunlightNeeds` enum (`FULL_SUN`, `PARTIAL_SUN`, `SHADE`)
-  - `WateringStatus` enum (`NOT_SET`, `WATER_TODAY`, `WATER_UPCOMING`, `WATER_OVERDUE`)
-  - Dynamic date arithmetic for `nextWateringDate` and `wateringStatus` (computed on-the-fly in Java, never stored in DB)
-  - Auto-creation of care schedule upon plant creation (`POST /api/plants`)
-  - `CareScheduleRepository` with plant & user scoping
-  - `CareScheduleRequest` and `CareScheduleResponse` DTOs
-  - `CareScheduleService` with strict ownership isolation (404 for non-owners)
-  - `CareScheduleController` (`GET /api/plants/{id}/care`, `PUT /api/plants/{id}/care`)
-- All unit & integration tests passing (`mvn clean test` 100% success — 48 tests passed).
+- Care Schedules Management module fully implemented with dynamic date arithmetic for watering status (`NOT_SET`, `WATER_TODAY`, `WATER_UPCOMING`, `WATER_OVERDUE`).
+- **Watering Records & History Management module fully implemented:**
+  - `WateringRecord` entity & `watering_records` table with FK to `plants(id)` ON DELETE CASCADE
+  - `@OneToMany` relationship in `Plant` entity with JPA cascade & orphan removal
+  - `WateringRecordRepository` with `findByPlantIdAndPlantUserIdOrderByWateredDateDescCreatedAtDesc`
+  - `WateringRecordRequest` and `WateringRecordResponse` DTOs
+  - `WateringRecordService` with transactional record creation and conditional update of `care_schedules.last_watered_date` (only if `wateredDate >= current lastWateredDate`)
+  - `WateringRecordController` (`GET /api/plants/{id}/watering`, `POST /api/plants/{id}/watering`)
+- All unit & integration tests passing (`mvn clean test` 100% success — 59 tests passed).
 - Live server verified on port 8080.
-- Database schema, 1-to-1 unique constraints, and foreign key relationships verified in MySQL.
+- Database schema, foreign key constraints (`ON DELETE CASCADE`), and cascade deletion verified in MySQL.
 
 ---
 
@@ -59,35 +57,37 @@ Last Updated: 2026-08-25
 | **M3 Consistency Fix: Strict 27 Endpoint Sync**| **COMPLETED & VERIFIED** | 2026-08-25 |
 | **Milestone 4: Plant CRUD & User Ownership**   | **COMPLETED & VERIFIED** | 2026-08-25 |
 | **Milestone 5: Care Schedules Management**     | **COMPLETED & VERIFIED** | 2026-08-25 |
+| **Milestone 6: Watering Records & History**    | **COMPLETED & VERIFIED** | 2026-08-25 |
 
 ---
 
-## Milestone 5 Verification Summary
+## Milestone 6 Verification Summary
 
-1. **Unit & Integration Tests (`mvn clean test`):** **SUCCESS (48/48 tests passed, 0 failures, 0 errors)**
-   - `CareScheduleControllerTest.testPlantCreation_AutoCreatesCareSchedule` (201 Created + NOT_SET status)
-   - `CareScheduleControllerTest.testGetCareSchedule_Owner_Success` (200 OK)
-   - `CareScheduleControllerTest.testCareSchedule_WateringStatus_WaterToday` (200 OK + WATER_TODAY)
-   - `CareScheduleControllerTest.testCareSchedule_WateringStatus_WaterOverdue` (200 OK + WATER_OVERDUE)
-   - `CareScheduleControllerTest.testUpdateCareSchedule_Owner_Success` (200 OK + WATER_UPCOMING)
-   - `CareScheduleControllerTest.testGetCareSchedule_NonOwner_Returns404` (404 Not Found)
-   - `CareScheduleControllerTest.testUpdateCareSchedule_NonOwner_Returns404` (404 Not Found)
-   - `CareScheduleControllerTest.testUpdateCareSchedule_FutureDate_BadRequest` (400 Bad Request)
-   - `CareScheduleControllerTest.testUpdateCareSchedule_InvalidInterval_BadRequest` (400 Bad Request)
-   - `CareScheduleControllerTest.testUnauthenticated_AccessCareSchedule_Unauthorized` (401 Unauthorized)
-   - All 38 tests from Milestones 1, 2, 3, and 4 continue to pass 100%.
+1. **Unit & Integration Tests (`mvn clean test`):** **SUCCESS (59/59 tests passed, 0 failures, 0 errors, 0 skipped)**
+   - `WateringRecordControllerTest.testRecordWatering_Owner_Success` (201 Created + care schedule lastWateredDate updated)
+   - `WateringRecordControllerTest.testRecordWatering_OlderDate_DoesNotOverwriteNewer` (201 Created + preserved newer date)
+   - `WateringRecordControllerTest.testGetWateringHistory_Owner_Success` (200 OK + newest first sorting)
+   - `WateringRecordControllerTest.testGetWateringHistory_NonOwner_Returns404` (404 Not Found)
+   - `WateringRecordControllerTest.testRecordWatering_NonOwner_Returns404` (404 Not Found)
+   - `WateringRecordControllerTest.testRecordWatering_FutureDate_BadRequest` (400 Bad Request)
+   - `WateringRecordControllerTest.testRecordWatering_NullDate_BadRequest` (400 Bad Request)
+   - `WateringRecordControllerTest.testRecordWatering_NotesTooLong_BadRequest` (400 Bad Request)
+   - `WateringRecordControllerTest.testDeletePlant_CascadesToWateringRecords` (Cascade deletion verified)
+   - `WateringRecordControllerTest.testUnauthenticated_AccessWatering_Unauthorized` (401 Unauthorized)
+   - All 49 tests from Milestones 1 through 5 continue to pass 100%.
 
 2. **Live REST API Verification (Port 8080):** **SUCCESS**
-   - Plant creation auto-creates care schedule with `wateringStatus = NOT_SET`
-   - `GET /api/plants/{id}/care` returns full care schedule
-   - `PUT /api/plants/{id}/care` dynamically computes `WATER_TODAY`, `WATER_OVERDUE`, `WATER_UPCOMING`
-   - Non-owner access to `GET` and `PUT /api/plants/{id}/care` returns `404 Not Found`
-   - Future `lastWateredDate` returns `400 Bad Request`
-   - Unauthenticated access returns `401 Unauthorized`
+   - User creates plant and posts watering event for today -> 201 Created, `careSchedule.lastWateredDate` updated, status dynamically calculated.
+   - User posts backdated historical watering event -> 201 Created, newer `lastWateredDate` preserved.
+   - `GET /api/plants/{id}/watering` returns full history ordered by `wateredDate DESC, createdAt DESC`.
+   - Non-owner GET and POST return 404 Not Found (Anti-enumeration).
+   - Future `wateredDate`, null date, and notes > 500 characters return 400 Bad Request.
+   - Unauthenticated requests return 401 Unauthorized.
+   - Deleting plant cascades and removes all watering records.
 
 3. **Database Verification (MySQL):**
-   - Table `care_schedules` verified with unique constraint on `plant_id` and foreign key constraint `plant_id -> plants(id)`.
-   - `nextWateringDate` and `wateringStatus` are dynamically computed and not stored in DB.
+   - Table `watering_records` verified with foreign key constraint `plant_id -> plants(id) ON DELETE CASCADE`.
+   - Cascade deletion confirmed in MySQL.
 
 ---
 
@@ -95,8 +95,7 @@ Last Updated: 2026-08-25
 
 | Milestone | Task                                       | Status  |
 |-----------|--------------------------------------------|---------|
-| **M6**    | **Watering Records & History Management**  | **READY TO START (Awaiting Approval)** |
-| M7        | Growth Tracking                            | BLOCKED |
+| **M7**    | **Growth Records & Tracking Management**   | **READY TO START (Awaiting Approval)** |
 | M8        | Dashboard                                  | BLOCKED |
 | M9        | Admin Panel                                | BLOCKED |
 | M10       | Frontend + UI Polish                       | BLOCKED |
