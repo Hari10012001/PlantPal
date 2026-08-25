@@ -28,6 +28,9 @@ public class Plant {
     @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<WateringRecord> wateringRecords = new ArrayList<>();
 
+    @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<GrowthRecord> growthRecords = new ArrayList<>();
+
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
@@ -116,6 +119,14 @@ public class Plant {
 
     public void setWateringRecords(List<WateringRecord> wateringRecords) {
         this.wateringRecords = wateringRecords;
+    }
+
+    public List<GrowthRecord> getGrowthRecords() {
+        return growthRecords;
+    }
+
+    public void setGrowthRecords(List<GrowthRecord> growthRecords) {
+        this.growthRecords = growthRecords;
     }
 
     public String getName() {

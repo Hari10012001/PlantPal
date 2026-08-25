@@ -10,6 +10,7 @@ import com.plantpal.entity.WateringRecord;
 import com.plantpal.enums.PlantStatus;
 import com.plantpal.enums.Role;
 import com.plantpal.repository.CareScheduleRepository;
+import com.plantpal.repository.GrowthRecordRepository;
 import com.plantpal.repository.PlantCategoryRepository;
 import com.plantpal.repository.PlantRepository;
 import com.plantpal.repository.UserRepository;
@@ -46,6 +47,9 @@ class WateringRecordControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
+    private GrowthRecordRepository growthRecordRepository;
+
+    @Autowired
     private WateringRecordRepository wateringRecordRepository;
 
     @Autowired
@@ -70,6 +74,7 @@ class WateringRecordControllerTest {
 
     @BeforeEach
     void setUp() {
+        growthRecordRepository.deleteAll();
         wateringRecordRepository.deleteAll();
         careScheduleRepository.deleteAll();
         plantRepository.deleteAll();
