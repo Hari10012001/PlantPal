@@ -1,14 +1,14 @@
 # PROJECT_STATUS.md
 ## PlantPal - Personal Plant Care, Watering Schedule and Growth Monitoring Platform
-## Version 7 — Milestone 2 Security Review & Admin Password Cleanup Completed
+## Version 8 — Milestone 3 Completed
 
 ---
 
 ## Current Phase
 
-Milestone 2 (Authentication & User Management + Security Hardening) COMPLETE.
-Status: MILESTONE 2 VERIFIED AND SECURED — Awaiting Approval for Milestone 3
-Last Updated: 2026-08-24
+Milestone 3 (Plant Categories Management) COMPLETE.
+Status: MILESTONE 3 VERIFIED AND COMPLETED — Awaiting Approval for Milestone 4
+Last Updated: 2026-08-25
 
 ---
 
@@ -17,12 +17,18 @@ Last Updated: 2026-08-24
 - Greenfield project initialized with Git.
 - Spring Boot 3.2.5 application skeleton configured with Java 17/21 LTS.
 - MySQL 8.x connection established via environment variable (`DB_PASSWORD`).
-- Initial Admin password loaded via environment variable (`ADMIN_PASSWORD`). No hardcoded secrets anywhere in `src/main`.
-- Spring Security 6 session-based authentication fully operational with CSRF protection (`CookieCsrfTokenRepository` + `CsrfCookieFilter`).
+- Spring Security 6 session-based authentication fully operational with CSRF protection (`CookieCsrfTokenRepository`).
 - Full authentication suite verified: User entity, Role enum, UserRepository, AuthService, CustomUserDetailsService, AuthController.
-- Default Admin account seeded idempotently via `ADMIN_PASSWORD` env var (`admin@plantpal.local`).
-- All unit & integration tests passing (`mvn clean test` 100% success — 12 tests passed).
-- Live server verified on port 8080 (all 4 authentication endpoints tested and verified live).
+- Default Admin account seeded idempotently (`admin@plantpal.local`).
+- Plant Categories module fully implemented:
+  - `PlantCategory` entity & `plant_categories` table
+  - `PlantCategoryRepository` with case-insensitive uniqueness queries
+  - `CategoryService` with full CRUD, duplicate name guard, and in-use protection
+  - `CategoryController` (`GET /api/categories`, `GET /api/categories/{id}`)
+  - `AdminCategoryController` (`GET`, `POST`, `PUT`, `DELETE /api/admin/categories` guarded with `ADMIN` role)
+  - 8 approved seed categories initialized idempotently: Herb, Succulent, Flowering, Vegetable, Tree, Shrub, Fern, Cactus
+- All unit & integration tests passing (`mvn clean test` 100% success — 22 tests passed).
+- Live server verified on port 8080 (Category endpoints tested and verified live).
 
 ---
 
@@ -42,30 +48,37 @@ Last Updated: 2026-08-24
 | **Security Cleanup: DB Credential via Env Var**| **COMPLETED & VERIFIED** | 2026-08-24 |
 | **Milestone 2: Authentication & User Mgmt**    | **COMPLETED & VERIFIED** | 2026-08-24 |
 | **M2 Security Fix: Admin Password via Env Var**| **COMPLETED & VERIFIED** | 2026-08-24 |
+| **Milestone 3: Plant Categories Management**   | **COMPLETED & VERIFIED** | 2026-08-25 |
 
 ---
 
-## Milestone 2 Security Fix Verification Summary
+## Milestone 3 Verification Summary
 
-1. **Hardcoded Admin Password Eradicated:**
-   - Removed `passwordEncoder.encode("Admin@123")` from `DataInitializer.java`.
-   - Admin seed password configured via `app.admin.password=${ADMIN_PASSWORD:}`.
-   - If `ADMIN_PASSWORD` is absent, seeding is skipped safely with a clear log warning.
-2. **Automated Tests (`mvn clean test`):**
-   - 12 tests passed, 0 failures, 0 errors.
-   - `AuthControllerTest` uses dedicated test credentials and verifies no password exposure.
-3. **Live Server Verification (Port 8080):**
-   - Register new user: 201 Created
-   - Register validation (mismatch): 400 Bad Request
-   - Login: 200 OK (UserResponse contains no password)
-   - GET `/api/auth/me` with session: 200 OK
-   - GET `/api/auth/me` without session: 401 Unauthorized
-   - Admin login via env var credential: 200 OK (`role: ADMIN`)
-   - Invalid login: 401 Unauthorized
-   - Logout with CSRF token (`X-XSRF-TOKEN`): 200 OK
-   - Post-logout `/me`: 401 Unauthorized
-4. **Credential Scan:**
-   - 0 hardcoded secrets found in `src/main`.
+1. **Unit & Integration Tests (`mvn clean test`):** **SUCCESS (22/22 tests passed, 0 failures, 0 errors)**
+   - `CategoryControllerTest.testGetAllCategories_UserRole_Success` (200 OK)
+   - `CategoryControllerTest.testGetCategoryById_Success` (200 OK)
+   - `CategoryControllerTest.testGetCategoryById_NotFound` (404 Not Found)
+   - `CategoryControllerTest.testAdminCreateCategory_Success` (201 Created)
+   - `CategoryControllerTest.testAdminCreateCategory_DuplicateName` (409 Conflict)
+   - `CategoryControllerTest.testAdminCreateCategory_ValidationError` (400 Bad Request)
+   - `CategoryControllerTest.testAdminUpdateCategory_Success` (200 OK)
+   - `CategoryControllerTest.testAdminDeleteCategory_Success` (204 No Content)
+   - `CategoryControllerTest.testUserRole_AccessAdminEndpoints_Forbidden` (403 Forbidden)
+   - `CategoryControllerTest.testUnauthenticated_AccessCategories_Unauthorized` (401 Unauthorized)
+   - All 12 Milestone 1 & 2 tests continue to pass 100%.
+
+2. **Live REST API Verification (Port 8080):** **SUCCESS (10/10 live checks passed)**
+   - `GET /api/categories` by standard USER: 200 OK (all 8 approved categories returned)
+   - `POST /api/admin/categories` by standard USER: 403 Forbidden
+   - `POST /api/admin/categories` by ADMIN: 201 Created
+   - `POST /api/admin/categories` duplicate name: 409 Conflict
+   - `PUT /api/admin/categories/{id}` by ADMIN: 200 OK
+   - `DELETE /api/admin/categories/{id}` by ADMIN: 204 No Content
+   - `DELETE /api/admin/categories/99999`: 404 Not Found
+   - Unauthenticated `GET /api/categories`: 401 Unauthorized
+
+3. **Database Verification:**
+   - Exactly the 8 approved categories seeded: `Herb`, `Succulent`, `Flowering`, `Vegetable`, `Tree`, `Shrub`, `Fern`, `Cactus`.
 
 ---
 
@@ -73,8 +86,7 @@ Last Updated: 2026-08-24
 
 | Milestone | Task                                       | Status  |
 |-----------|--------------------------------------------|---------|
-| **M3**    | **Plant Categories (Admin Management & Public Dropdown)** | **READY TO START (Awaiting Approval)** |
-| M4        | Plant CRUD                                 | BLOCKED |
+| **M4**    | **Plant CRUD & User Ownership Management** | **READY TO START (Awaiting Approval)** |
 | M5        | Care Schedules                             | BLOCKED |
 | M6        | Watering Records                           | BLOCKED |
 | M7        | Growth Tracking                            | BLOCKED |
