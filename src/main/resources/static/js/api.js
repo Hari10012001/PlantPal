@@ -42,8 +42,9 @@ async function apiRequest(url, options = {}) {
 
         // Handle 401 Unauthorized
         if (response.status === 401) {
-            const isAuthPage = window.location.pathname.includes('/login.html') || window.location.pathname.includes('/register.html');
-            if (!isAuthPage) {
+            const path = window.location.pathname;
+            const isPublicPage = path === '/' || path.endsWith('/index.html') || path.includes('/login.html') || path.includes('/register.html');
+            if (!isPublicPage) {
                 window.location.href = '/pages/login.html?expired=true';
             }
             throw { status: 401, message: 'Session expired or unauthenticated.' };
@@ -89,7 +90,7 @@ function showToast(message, type = 'info', duration = 4000) {
     toast.className = `toast toast-${type}`;
     toast.innerHTML = `
         <span>${message}</span>
-        <button style="background:none;border:none;cursor:pointer;font-size:1.1rem;margin-left:0.5rem;" onclick="this.parentElement.remove()">✕</button>
+        <button style="background:none;border:none;cursor:pointer;font-size:1.1rem;margin-left:0.5rem;" onclick="this.parentElement.remove()">âœ•</button>
     `;
 
     container.appendChild(toast);
@@ -117,11 +118,11 @@ function formatDateTime(dateTimeStr) {
 function getStatusBadge(status) {
     switch (status) {
         case 'HEALTHY':
-            return '<span class="badge-status badge-healthy">🌿 Healthy</span>';
+            return '<span class="badge-status badge-healthy">ðŸŒ¿ Healthy</span>';
         case 'NEEDS_ATTENTION':
-            return '<span class="badge-status badge-needs-attention">⚠️ Needs Attention</span>';
+            return '<span class="badge-status badge-needs-attention">âš ï¸ Needs Attention</span>';
         case 'INACTIVE':
-            return '<span class="badge-status badge-inactive">💤 Inactive</span>';
+            return '<span class="badge-status badge-inactive">ðŸ’¤ Inactive</span>';
         default:
             return `<span class="badge-status badge-inactive">${status || 'Unknown'}</span>`;
     }
@@ -130,13 +131,13 @@ function getStatusBadge(status) {
 function getWateringBadge(status) {
     switch (status) {
         case 'WATER_OVERDUE':
-            return '<span class="badge-status badge-overdue">🚨 Overdue</span>';
+            return '<span class="badge-status badge-overdue">ðŸš¨ Overdue</span>';
         case 'WATER_TODAY':
-            return '<span class="badge-status badge-today">💧 Water Today</span>';
+            return '<span class="badge-status badge-today">ðŸ’§ Water Today</span>';
         case 'WATER_UPCOMING':
-            return '<span class="badge-status badge-upcoming">🌱 Upcoming</span>';
+            return '<span class="badge-status badge-upcoming">ðŸŒ± Upcoming</span>';
         case 'NOT_SET':
-            return '<span class="badge-status badge-notset">⏳ Not Set</span>';
+            return '<span class="badge-status badge-notset">â³ Not Set</span>';
         default:
             return `<span class="badge-status badge-notset">${status || 'Not Set'}</span>`;
     }

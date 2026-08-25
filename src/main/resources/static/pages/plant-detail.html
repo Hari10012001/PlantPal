@@ -214,7 +214,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="care-input-sunlight">Sunlight Needs (Optional)</label>
-                        <input type="text" id="care-input-sunlight" class="form-control-custom" placeholder="e.g. Direct Sunlight, Partial Shade" maxlength="100">
+                        <select id="care-input-sunlight" class="form-control-custom"><option value="">Not Specified</option><option value="FULL_SUN">☀️ Full Sun</option><option value="PARTIAL_SUN">⛅ Partial Sun</option><option value="SHADE">☁️ Shade</option></select>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="care-input-fertilize">Fertilizing Interval (Days, Optional)</label>
@@ -339,11 +339,13 @@
 
                 document.getElementById('plant-name').textContent = plant.name;
                 document.getElementById('plant-species').textContent = plant.species || 'No scientific name provided';
-                document.getElementById('plant-category').textContent = plant.categoryName || 'None';
+                const catName = plant.category ? plant.category.name : (plant.categoryName || 'None');
+                document.getElementById('plant-category').textContent = catName;
                 document.getElementById('plant-location').textContent = plant.location || 'Not specified';
                 document.getElementById('plant-created-at').textContent = formatDate(plant.createdAt?.split('T')[0]);
                 document.getElementById('plant-status-badge').innerHTML = getStatusBadge(plant.status);
-                document.getElementById('plant-watering-badge').innerHTML = getWateringBadge(plant.wateringStatus);
+                const wStatus = plant.careSchedule ? plant.careSchedule.wateringStatus : plant.wateringStatus;
+                document.getElementById('plant-watering-badge').innerHTML = getWateringBadge(wStatus);
                 document.getElementById('quick-status-select').value = plant.status;
 
                 if (plant.description) {
@@ -483,7 +485,8 @@
         function openEditPlantModal() {
             if (!currentPlant) return;
             document.getElementById('edit-name').value = currentPlant.name;
-            document.getElementById('edit-category').value = currentPlant.categoryId;
+            const currentCatId = currentPlant.category ? currentPlant.category.id : currentPlant.categoryId;
+            document.getElementById('edit-category').value = currentCatId;
             document.getElementById('edit-status').value = currentPlant.status;
             document.getElementById('edit-species').value = currentPlant.species || '';
             document.getElementById('edit-location').value = currentPlant.location || '';
@@ -580,7 +583,7 @@
             const payload = {
                 wateringIntervalDays: parseInt(document.getElementById('care-input-interval').value),
                 lastWateredDate: document.getElementById('care-input-last-watered').value || null,
-                sunlightNeeds: document.getElementById('care-input-sunlight').value.trim() || null,
+                sunlightNeeds: document.getElementById('care-input-sunlight').value || null,
                 fertilizingIntervalDays: fertVal ? parseInt(fertVal) : null
             };
 
