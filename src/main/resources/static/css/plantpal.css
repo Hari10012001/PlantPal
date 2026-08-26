@@ -732,6 +732,17 @@ a:hover {
     box-shadow: var(--shadow-sm);
 }
 
+
+.form-control-custom:disabled,
+.form-control-custom[readonly] {
+    background-color: var(--bg-glass-pill) !important;
+    color: var(--text-main) !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+    cursor: not-allowed;
+    opacity: 0.85;
+    border-color: var(--border-subtle);
+}
+
 .form-control-custom:focus {
     outline: none;
     border-color: var(--border-focus);
