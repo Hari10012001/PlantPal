@@ -77,6 +77,9 @@ function renderNavbar(user) {
                 ` : ''}
                 ${adminLinks}
                 <a href="/pages/profile.html" class="nav-link ${isProfile ? 'active' : ''}">Profile</a>
+                <button type="button" class="theme-toggle-btn" onclick="window.togglePlantPalTheme()">
+                    <span class="theme-icon">🌙</span> <span class="theme-label">Dark</span>
+                </button>
                 <span class="user-badge">
                     👤 ${escapeHtml(user?.fullName || 'User')} (${user?.role || 'USER'})
                 </span>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - PlantPal</title>
     <link rel="stylesheet" href="/css/plantpal.css">
+    <script src="/js/theme.js"></script>
 </head>
 <body>
     <nav id="main-navbar"></nav>
@@ -41,12 +42,12 @@
         </div>
 
         <!-- Care Alerts Row -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 2rem;">
+        <div class="dashboard-alert-grid">
             <div class="card-custom" style="border-left: 5px solid #ef4444; margin-bottom: 0;">
                 <div class="card-header-flex" style="border-bottom: none; margin-bottom: 0;">
                     <div>
                         <div class="stat-label" style="color: #ef4444;">🚨 Overdue for Water</div>
-                        <h3 id="stat-overdue" style="font-size: 1.75rem; color: #b91c1c; margin-top: 0.25rem;">0 Plants</h3>
+                        <h3 id="stat-overdue" class="stat-number-overdue">0 Plants</h3>
                     </div>
                     <a href="/pages/plants.html" class="btn-outline-custom btn-sm">Review Plants</a>
                 </div>
@@ -55,7 +56,7 @@
                 <div class="card-header-flex" style="border-bottom: none; margin-bottom: 0;">
                     <div>
                         <div class="stat-label" style="color: #2563eb;">💧 Due Today</div>
-                        <h3 id="stat-today" style="font-size: 1.75rem; color: #1d4ed8; margin-top: 0.25rem;">0 Plants</h3>
+                        <h3 id="stat-today" class="stat-number-today">0 Plants</h3>
                     </div>
                     <a href="/pages/plants.html" class="btn-outline-custom btn-sm">Review Plants</a>
                 </div>
@@ -63,7 +64,7 @@
         </div>
 
         <!-- Two Columns: Upcoming Care (7 days) & Recently Added Plants -->
-        <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.5rem;">
+        <div class="dashboard-columns-grid">
             <!-- Upcoming Care (Next 7 Days) -->
             <div class="card-custom">
                 <div class="card-header-flex">

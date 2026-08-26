@@ -5,51 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Account - PlantPal</title>
     <link rel="stylesheet" href="/css/plantpal.css">
-    <style>
-        .auth-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 80vh;
-            padding: 1.5rem;
-        }
-        .auth-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-md);
-            max-width: 440px;
-            width: 100%;
-            padding: 2.25rem;
-        }
-        .auth-header {
-            text-align: center;
-            margin-bottom: 1.75rem;
-        }
-        .auth-title {
-            font-size: 1.8rem;
-            color: var(--primary-hover);
-            margin-bottom: 0.5rem;
-        }
-        .alert-box {
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-sm);
-            margin-bottom: 1.25rem;
-            font-size: 0.9rem;
-            display: none;
-        }
-        .alert-error {
-            background-color: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #f87171;
-        }
-    </style>
-</head>
+    <script src="/js/theme.js"></script>
+    </head>
 <body>
     <nav class="navbar-custom">
         <div class="navbar-container">
             <a href="/" class="navbar-brand">🌱 PlantPal</a>
             <div class="navbar-nav">
+                <button type="button" class="theme-toggle-btn" onclick="window.togglePlantPalTheme()">
+                    <span class="theme-icon">🌙</span> <span class="theme-label">Dark</span>
+                </button>
                 <a href="/pages/login.html" class="nav-link">Sign In</a>
             </div>
         </div>

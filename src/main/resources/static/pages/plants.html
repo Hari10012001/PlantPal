@@ -5,74 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Plants - PlantPal</title>
     <link rel="stylesheet" href="/css/plantpal.css">
-    <style>
-        .filter-bar {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .filter-item {
-            flex: 1;
-            min-width: 200px;
-        }
-        .plant-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
-        }
-        .plant-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 1.5rem;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .plant-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        .plant-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.75rem;
-        }
-        .plant-name {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary-hover);
-        }
-        .plant-species {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-style: italic;
-        }
-        .plant-meta {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin: 0.75rem 0;
-            line-height: 1.7;
-        }
-        .plant-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-color);
-            margin-top: 1rem;
-        }
-    </style>
-</head>
+    <script src="/js/theme.js"></script>
+    </head>
 <body>
     <nav id="main-navbar"></nav>
 

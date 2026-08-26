@@ -90,7 +90,7 @@ function showToast(message, type = 'info', duration = 4000) {
     toast.className = `toast toast-${type}`;
     toast.innerHTML = `
         <span>${message}</span>
-        <button style="background:none;border:none;cursor:pointer;font-size:1.1rem;margin-left:0.5rem;" onclick="this.parentElement.remove()">âœ•</button>
+        <button style="background:none;border:none;cursor:pointer;font-size:1.1rem;margin-left:0.5rem;" onclick="this.parentElement.remove()" title="Close notification" aria-label="Close" style="background:none;border:none;cursor:pointer;font-size:1.25rem;margin-left:0.75rem;color:var(--text-muted);">&times;</button>
     `;
 
     container.appendChild(toast);
@@ -117,28 +117,19 @@ function formatDateTime(dateTimeStr) {
 
 function getStatusBadge(status) {
     switch (status) {
-        case 'HEALTHY':
-            return '<span class="badge-status badge-healthy">ðŸŒ¿ Healthy</span>';
-        case 'NEEDS_ATTENTION':
-            return '<span class="badge-status badge-needs-attention">âš ï¸ Needs Attention</span>';
-        case 'INACTIVE':
-            return '<span class="badge-status badge-inactive">ðŸ’¤ Inactive</span>';
-        default:
-            return `<span class="badge-status badge-inactive">${status || 'Unknown'}</span>`;
+        case 'HEALTHY': return '<span class="badge-status badge-healthy">🌿 HEALTHY</span>';
+        case 'NEEDS_ATTENTION': return '<span class="badge-status badge-needs-attention">⚠️ ATTENTION</span>';
+        case 'INACTIVE': return '<span class="badge-status badge-inactive">💤 INACTIVE</span>';
+        default: return `<span class="badge-status badge-inactive">${status || 'Unknown'}</span>`;
     }
 }
 
 function getWateringBadge(status) {
     switch (status) {
-        case 'WATER_OVERDUE':
-            return '<span class="badge-status badge-overdue">ðŸš¨ Overdue</span>';
-        case 'WATER_TODAY':
-            return '<span class="badge-status badge-today">ðŸ’§ Water Today</span>';
-        case 'WATER_UPCOMING':
-            return '<span class="badge-status badge-upcoming">ðŸŒ± Upcoming</span>';
-        case 'NOT_SET':
-            return '<span class="badge-status badge-notset">â³ Not Set</span>';
-        default:
-            return `<span class="badge-status badge-notset">${status || 'Not Set'}</span>`;
+        case 'WATER_OVERDUE': return '<span class="badge-status badge-overdue">🚨 OVERDUE</span>';
+        case 'WATER_TODAY': return '<span class="badge-status badge-today">💧 TODAY</span>';
+        case 'WATER_UPCOMING': return '<span class="badge-status badge-upcoming">🌱 UPCOMING</span>';
+        case 'NOT_SET': return '<span class="badge-status badge-notset">NOT SET</span>';
+        default: return `<span class="badge-status badge-notset">${status || 'Not Set'}</span>`;
     }
 }
