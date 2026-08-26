@@ -130,6 +130,18 @@ public class PlantResponse {
         this.createdAt = createdAt;
     }
 
+    public String getCategoryName() {
+        return category != null ? category.getName() : null;
+    }
+
+    public com.plantpal.enums.WateringStatus getWateringStatus() {
+        return careSchedule != null ? careSchedule.getWateringStatus() : null;
+    }
+
+    public java.time.LocalDate getNextWateringDate() {
+        return careSchedule != null ? careSchedule.getNextWateringDate() : null;
+    }
+
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }

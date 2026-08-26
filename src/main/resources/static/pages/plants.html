@@ -224,10 +224,10 @@
                             </div>
 
                             <div class="plant-meta">
-                                <div>🏷️ <strong>Category:</strong> ${escapeHtml(p.categoryName || 'None')}</div>
+                                <div>🏷️ <strong>Category:</strong> ${escapeHtml(p.categoryName || (p.category ? p.category.name : 'None'))}</div>
                                 <div>📍 <strong>Location:</strong> ${escapeHtml(p.location || 'Not specified')}</div>
-                                <div>💧 <strong>Watering Status:</strong> ${getWateringBadge(p.wateringStatus)}</div>
-                                <div>📅 <strong>Next Due:</strong> ${formatDate(p.nextWateringDate)}</div>
+                                <div>💧 <strong>Watering Status:</strong> ${getWateringBadge(p.wateringStatus || (p.careSchedule ? p.careSchedule.wateringStatus : undefined))}</div>
+                                <div>📅 <strong>Next Due:</strong> ${formatDate(p.nextWateringDate || (p.careSchedule ? p.careSchedule.nextWateringDate : undefined))}</div>
                             </div>
                         </div>
 

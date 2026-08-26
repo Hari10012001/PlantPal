@@ -236,7 +236,7 @@
                                 ${escapeHtml(p.name)}
                             </a>
                         </td>
-                        <td><span class="form-text-muted" style="font-size: 0.85rem;">${escapeHtml(p.categoryName || 'None')}</span></td>
+                        <td><span class="form-text-muted" style="font-size: 0.85rem;">${escapeHtml(p.categoryName || (p.category ? p.category.name : 'None'))}</span></td>
                         <td>${getStatusBadge(p.status)}</td>
                     </tr>
                 `;
