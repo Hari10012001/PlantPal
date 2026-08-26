@@ -40,112 +40,83 @@ $$\text{Browser (Vanilla JS + HTML5)} \longleftrightarrow \text{Spring Boot 3 RE
 
 ---
 
-## 4. DEMO PLANT DATA (VIVA DEMONSTRATION TABLES)
+## 4. REAL-TIME DEMO DATA SUITE (COPY-PASTE READY FOR VIVA)
 
-> **Student Tip:** Examiner munnadi demo kaatta indha 8 realistic plants-ah UI-la add pannunga. All categories, health statuses, and watering intervals will be demonstrated perfectly!
+> 💡 **Student Tip:** Examiner munnadi viva demo appo indha tables-la irukura real-time sample data-va use panni quick-aa copy-paste pannalaam!
 
-### Demo Plant 1 – Money Plant
-| Field | Demo Value |
-|---|---|
-| Plant Name | Money Plant |
-| Category | Herb |
-| Health Status | HEALTHY |
-| Watering Interval (Days) | 7 |
-| Last Watered | 24-08-2026 |
-| Species / Scientific Name | Epipremnum aureum |
-| Location | Living Room Shelf |
-| Description / Care Notes | Keep near indirect sunlight and avoid overwatering |
+### 4.1 Demo Accounts & Login Credentials
+| # | Account Type | Full Name | Email (Username) | Password | Role | Notes / Purpose |
+|:---:|---|---|---|---|:---:|---|
+| 1 | **Default Admin** | System Administrator | `admin@plantpal.local` | `LiveAdminPassword@2026` | `ADMIN` | Pre-seeded admin account; manages categories, users & stats |
+| 2 | **Primary User** | Hariharan | `hari@plantpal.local` | `HariPass@2026` | `USER` | Main student account for plant CRUD & care tracking |
+| 3 | **Demo User 2** | Ananya Sharma | `ananya@plantpal.local` | `AnanyaPass@2026` | `USER` | Indoor plant lover account for multi-user demo |
+| 4 | **Demo User 3** | Rajesh Kumar | `rajesh@plantpal.local` | `RajeshPass@2026` | `USER` | Terrace herb collection account |
+| 5 | **Demo User 4** | Priya Dharshini | `priya@plantpal.local` | `PriyaPass@2026` | `USER` | Balcony succulent user for ownership isolation test |
 
-### Demo Plant 2 – Snake Plant
-| Field | Demo Value |
-|---|---|
-| Plant Name | Snake Plant |
-| Category | Succulent |
-| Health Status | HEALTHY |
-| Watering Interval (Days) | 14 |
-| Last Watered | 20-08-2026 |
-| Species / Scientific Name | Sansevieria trifasciata |
-| Location | Bedroom Corner |
-| Description / Care Notes | Drought-tolerant air purifier; water only when soil is dry |
+---
 
-### Demo Plant 3 – Aloe Vera
-| Field | Demo Value |
-|---|---|
-| Plant Name | Aloe Vera |
-| Category | Succulent |
-| Health Status | NEEDS_ATTENTION |
-| Watering Interval (Days) | 10 |
-| Last Watered | 10-08-2026 |
-| Species / Scientific Name | Aloe barbadensis miller |
-| Location | Sunny Balcony Sill |
-| Description / Care Notes | Lower leaves slightly yellow; reduce watering and check drainage |
+### 4.2 Add New Plant Demo Data (8 Plants)
+| Field | Plant 1 (Money Plant) | Plant 2 (Snake Plant) | Plant 3 (Aloe Vera) | Plant 4 (Red Rose) |
+|---|---|---|---|---|
+| **Plant Name** | Money Plant | Snake Plant | Aloe Vera | Red Rose |
+| **Category** | Herb | Succulent | Succulent | Flowering |
+| **Health Status** | HEALTHY | HEALTHY | NEEDS_ATTENTION | HEALTHY |
+| **Interval (Days)** | 7 | 14 | 10 | 3 |
+| **Last Watered** | 24-08-2026 | 20-08-2026 | 10-08-2026 | 25-08-2026 |
+| **Species** | Epipremnum aureum | Sansevieria trifasciata | Aloe barbadensis miller | Rosa rubiginosa |
+| **Location** | Living Room Shelf | Bedroom Corner | Sunny Balcony Sill | Terrace Garden |
+| **Care Notes** | Indirect sunlight | Drought-tolerant air purifier | Lower leaves yellow; check drainage | Needs direct morning sun |
 
-### Demo Plant 4 – Red Rose
-| Field | Demo Value |
-|---|---|
-| Plant Name | Red Rose |
-| Category | Flowering |
-| Health Status | HEALTHY |
-| Watering Interval (Days) | 3 |
-| Last Watered | 25-08-2026 |
-| Species / Scientific Name | Rosa rubiginosa |
-| Location | Terrace Garden |
-| Description / Care Notes | Needs 5-6 hours direct morning sun; prune faded buds |
+| Field | Plant 5 (Tulsi) | Plant 6 (Boston Fern) | Plant 7 (Cactus) | Plant 8 (Peace Lily) |
+|---|---|---|---|---|
+| **Plant Name** | Holy Basil (Tulsi) | Boston Fern | Golden Barrel Cactus | Peace Lily |
+| **Category** | Herb | Fern | Cactus | Flowering |
+| **Health Status** | HEALTHY | NEEDS_ATTENTION | INACTIVE | HEALTHY |
+| **Interval (Days)** | 2 | 3 | 30 | 5 |
+| **Last Watered** | 26-08-2026 | 21-08-2026 | 01-08-2026 | 23-08-2026 |
+| **Species** | Ocimum tenuiflorum | Nephrolepis exaltata | Echinocactus grusonii | Spathiphyllum wallisii |
+| **Location** | Front Courtyard | Bathroom Window Shade | South Facing Ledge | Office Study Desk |
+| **Care Notes** | Daily moisture & sun | Mist leaves; low humidity | Winter dormancy; no water | Glossy dark leaves; droops when dry |
 
-### Demo Plant 5 – Tulsi
-| Field | Demo Value |
-|---|---|
-| Plant Name | Holy Basil (Tulsi) |
-| Category | Herb |
-| Health Status | HEALTHY |
-| Watering Interval (Days) | 2 |
-| Last Watered | 26-08-2026 |
-| Species / Scientific Name | Ocimum tenuiflorum |
-| Location | Front Courtyard |
-| Description / Care Notes | Sacred medicinal plant; requires daily moisture and warm sunlight |
+---
 
-### Demo Plant 6 – Boston Fern
-| Field | Demo Value |
-|---|---|
-| Plant Name | Boston Fern |
-| Category | Fern |
-| Health Status | NEEDS_ATTENTION |
-| Watering Interval (Days) | 3 |
-| Last Watered | 21-08-2026 |
-| Species / Scientific Name | Nephrolepis exaltata |
-| Location | Bathroom Window Shade |
-| Description / Care Notes | Fronds drying due to low humidity; mist leaves with water spray |
+### 4.3 Update Care Schedule Demo Data (Modal Fields)
+| # | Plant Reference | Watering Interval (Days) * | Last Watered Date (Optional) | Sunlight Needs (Optional) | Fertilizing Interval (Days, Optional) |
+|:---:|---|:---:|:---:|---|:---:|
+| 1 | **Money Plant** | `7` | `24-08-2026` | `⛅ Partial Sun` (`PARTIAL_SUN`) | `30` |
+| 2 | **Snake Plant** | `14` | `20-08-2026` | `☁️ Shade` (`SHADE`) | `60` |
+| 3 | **Aloe Vera** | `10` | `10-08-2026` | `☀️ Full Sun` (`FULL_SUN`) | `45` |
+| 4 | **Red Rose** | `3` | `25-08-2026` | `☀️ Full Sun` (`FULL_SUN`) | `15` |
+| 5 | **Peace Lily** | `5` | `23-08-2026` | `☁️ Shade` (`SHADE`) | `30` |
 
-### Demo Plant 7 – Golden Barrel Cactus
-| Field | Demo Value |
-|---|---|
-| Plant Name | Golden Barrel Cactus |
-| Category | Cactus |
-| Health Status | INACTIVE |
-| Watering Interval (Days) | 30 |
-| Last Watered | 01-08-2026 |
-| Species / Scientific Name | Echinocactus grusonii |
-| Location | South Facing Ledge |
-| Description / Care Notes | Plant is in winter dormancy; no active watering required |
+---
 
-### Demo Plant 8 – Peace Lily
-| Field | Demo Value |
-|---|---|
-| Plant Name | Peace Lily |
-| Category | Flowering |
-| Health Status | HEALTHY |
-| Watering Interval (Days) | 5 |
-| Last Watered | 23-08-2026 |
-| Species / Scientific Name | Spathiphyllum wallisii |
-| Location | Office Study Desk |
-| Description / Care Notes | Glossy dark leaves; droops gently when soil needs watering |
+### 4.4 Record Watering Event Demo Data (Modal Fields)
+| # | Plant Reference | Watered Date * | Notes (Optional) |
+|:---:|---|:---:|---|
+| 1 | **Money Plant** | `26-08-2026` | `Regular watering, cleaned leaves with soft wet cloth` |
+| 2 | **Red Rose** | `25-08-2026` | `Morning deep soak; added seaweed liquid fertilizer` |
+| 3 | **Peace Lily** | `26-08-2026` | `Watered after noticing gentle leaf droop; perked up in 2 hrs` |
+| 4 | **Holy Basil (Tulsi)** | `26-08-2026` | `Daily morning watering; sprayed water on foliage` |
+| 5 | **Snake Plant** | `20-08-2026` | `Light soak around rim; soil dried completely before watering` |
+
+---
+
+### 4.5 Record Growth Observation Demo Data (Modal Fields)
+| # | Plant Reference | Observation Date * | Height (cm) | Leaf Count | Observation Notes |
+|:---:|---|:---:|:---:|:---:|---|
+| 1 | **Money Plant** | `26-08-2026` | `32.5` | `14` | `Two new vibrant green vines climbing up moss pole` |
+| 2 | **Red Rose** | `26-08-2026` | `48.0` | `22` | `Three fresh crimson buds formed at stem apex` |
+| 3 | **Peace Lily** | `25-08-2026` | `28.2` | `9` | `White spathe flower bloom fully open and glossy` |
+| 4 | **Holy Basil (Tulsi)** | `26-08-2026` | `21.0` | `35` | `Bushy branching after pinching top shoots; fragrant` |
+| 5 | **Snake Plant** | `24-08-2026` | `41.5` | `7` | `New pup offset shoot emerging from base soil` |
 
 ---
 
 ## 5. HOW TO FILL DEMO DATA (STEP-BY-STEP)
 
 1. Browser open panni `http://localhost:8080` URL-ku ponga.
-2. Unga registered **USER** account details kuduthu Login pannunga.
+2. Unga registered **USER** account details kuduthu Login pannunga (`hari@plantpal.local` / `HariPass@2026`).
 3. Top navigation bar-la irukkura **"My Plants"** click pannunga.
 4. Top right corner-la irukura green **"+ Add New Plant"** button click pannunga (modal form open aagum).
 5. Mela irukura table-la irundhu **Plant 1 (Money Plant)** details edunga.
@@ -157,8 +128,6 @@ $$\text{Browser (Vanilla JS + HTML5)} \longleftrightarrow \text{Spring Boot 3 RE
 11. Optional fields: Species, Location, and Care Notes-ah fill pannunga.
 12. **"Add Plant"** button click pannunga; plant card instant-aa catalog-la add aagidum.
 13. Adhe maari remaining demo plants-ah yum one by one add pannunga.
-
-*(Indha demo data examiner-ku visual demo kaata dhaan. Application code-la idhu hardcoded illa, dynamic MySQL database storage.)*
 
 ---
 
@@ -172,7 +141,7 @@ $$\text{Browser (Vanilla JS + HTML5)} \longleftrightarrow \text{Spring Boot 3 RE
 - **Health Statuses:** 5 Healthy, 2 Needs Attention, 1 Inactive — Dashboard stats cards colorful-aa differ aagi visually super-aa theriyum.
 - **Watering Alerts:** Aloe & Fern overdue alert tharum; Rose & Tulsi upcoming timeline-la kaatum.
 - **Search & Filter:** Search bar-la "Rose" nu type panna filter aagum; Category dropdown-la "Succulent" select panna aloe & snake plant filter aagum.
-- **Full Tracking Flow:** Peace Lily click panni "Quick Water" and "Log Growth Observation" (e.g. 32 cm, 6 leaves) easy-aa live-aa demonstrate pannalaam.
+- **Full Tracking Flow:** Peace Lily click panni "Quick Water" and "Log Growth Observation" (e.g. 28.2 cm, 9 leaves) easy-aa live-aa demonstrate pannalaam.
 
 ---
 
