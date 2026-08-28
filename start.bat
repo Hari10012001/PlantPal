@@ -23,23 +23,25 @@ if %ERRORLEVEL% NEQ 0 (
 )
 echo       Java runtime detected.
 
-:: 3. Free Port 8080 if already in use
+:: 3. Check Maven
 echo.
-echo [2/4] Ensuring Port 8080 is available...
-for /f "tokens=5" %%p in ('netstat -aon ^| findstr /R ":8080 .*LISTENING"') do (
-    echo       Freeing Port 8080 (PID %%p)...
-    taskkill /F /PID %%p >nul 2>&1
+echo [2/4] Checking Maven build tool...
+call mvn -version >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] Maven is not installed or not in PATH!
+    pause
+    exit /b 1
 )
-echo       Port 8080 ready.
+echo       Maven build tool detected.
 
-:: 4. Start Spring Boot in a dedicated server window
+:: 4. Start Spring Boot in dedicated window
 echo.
 echo [3/4] Starting PlantPal Spring Boot Server on port 8080...
-echo       (Server logs will run in a dedicated window)
+echo       (Logs will run in a separate window. Press Ctrl+C there to stop)
 cd /d "%~dp0"
-start "PlantPal Backend Server" cmd /k "title PlantPal Server Logs && set DB_PASSWORD=Hari2025@&& set ADMIN_PASSWORD=LiveAdminPassword@2026&& mvn spring-boot:run"
+start "PlantPal Backend Server" cmd /k "title PlantPal Server Logs && set DB_PASSWORD=Hari2025@& set ADMIN_PASSWORD=LiveAdminPassword@2026& call mvn spring-boot:run"
 
-:: 5. Wait for server and automatically open browser
+:: 5. Wait for server and automatically launch default browser
 echo.
 echo [4/4] Waiting for backend server to become ready on http://localhost:8080...
 set MAX_WAIT=35
@@ -57,18 +59,18 @@ if %ERRORLEVEL% EQU 0 (
     echo.
     echo To stop the application anytime, double-click stop.bat
     echo.
-    timeout /t 4 >nul
+    ping 127.0.0.1 -n 4 >nul
     exit /b 0
 )
 
 set /a COUNT+=1
 if %COUNT% GEQ %MAX_WAIT% (
     echo.
-    echo [NOTICE] Server is taking slightly longer. Opening browser now...
+    echo [NOTICE] Server is taking a bit longer. Opening browser now...
     start http://localhost:8080/pages/login.html
     exit /b 0
 )
 
-echo       Waiting for server startup... (%COUNT%/%MAX_WAIT%s)
-timeout /t 2 >nul
+echo       Waiting for port 8080... (%COUNT%/%MAX_WAIT%s)
+ping 127.0.0.1 -n 3 >nul
 goto WAIT_LOOP
