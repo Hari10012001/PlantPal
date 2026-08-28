@@ -1,29 +1,25 @@
 @echo off
-title PlantPal - Stopping Application
-cls
+TITLE PlantPal - Stopping Application
+COLOR 0C
+CLS
 
-echo =========================================================
-echo    PLANTPAL - SHUTTING DOWN SERVER
-echo =========================================================
+echo =========================================================================
+echo               PLANTPAL - SHUTTING DOWN SERVER
+echo =========================================================================
 echo.
 
 echo [*] Searching for processes running on port 8080...
-set "FOUND=0"
-
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8080" ^| findstr "LISTENING"') do (
-    set "FOUND=1"
-    echo [*] Found process with PID: %%a. Terminating...
-    taskkill /F /PID %%a >nul 2>&1
+for /f "tokens=5" %%p in ('netstat -aon ^| findstr /R ":8080 .*LISTENING"') do (
+    echo [*] Found process with PID: %%p. Terminating...
+    taskkill /F /PID %%p >nul 2>&1
 )
 
-if "%FOUND%"=="1" (
-    echo.
-    echo [SUCCESS] PlantPal server (Port 8080) has been stopped successfully!
-) else (
-    echo.
-    echo [INFO] No running PlantPal process found on Port 8080.
-)
+:: Extra fallback via PowerShell to ensure clean shutdown
+powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }" >nul 2>&1
 
 echo.
-echo =========================================================
-pause
+echo =========================================================================
+echo [SUCCESS] PlantPal server (Port 8080) has been stopped successfully!
+echo =========================================================================
+echo.
+timeout /t 3 >nul
