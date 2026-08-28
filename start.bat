@@ -10,8 +10,8 @@ echo =========================================================================
 echo.
 
 :: 1. Set Database & Admin Environment Variables
-set "DB_PASSWORD=Hari2025@"
-set "ADMIN_PASSWORD=LiveAdminPassword@2026"
+if "%DB_PASSWORD%"=="" set "DB_PASSWORD=Hari2025@"
+if "%ADMIN_PASSWORD%"=="" set "ADMIN_PASSWORD=LiveAdminPassword@2026"
 
 :: 2. Check Java
 echo [1/4] Checking Java environment...
@@ -39,7 +39,7 @@ echo.
 echo [3/4] Starting PlantPal Spring Boot Server on port 8080...
 echo       (Logs will run in a separate window. Press Ctrl+C there to stop)
 cd /d "%~dp0"
-start "PlantPal Backend Server" cmd /k "title PlantPal Server Logs && set DB_PASSWORD=Hari2025@& set ADMIN_PASSWORD=LiveAdminPassword@2026& call mvn spring-boot:run"
+start "PlantPal Backend Server" cmd /k "title PlantPal Server Logs && set \"DB_PASSWORD=%DB_PASSWORD%\" && set \"ADMIN_PASSWORD=%ADMIN_PASSWORD%\" && call mvn spring-boot:run"
 
 :: 5. Wait for server and automatically launch default browser
 echo.

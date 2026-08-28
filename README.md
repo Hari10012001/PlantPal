@@ -1,8 +1,8 @@
 ﻿# 🌱 PlantPal — A Personal Plant Care, Watering Schedule and Growth Monitoring Platform
 
-[![Release](https://img.shields.io/badge/Release-v1.1.0-emerald.svg)](https://github.com/Hari10012001/PlantPal/releases/tag/v1.1.0)
+[![Release](https://img.shields.io/badge/Release-v1.1.1-emerald.svg)](https://github.com/Hari10012001/PlantPal/releases/tag/v1.1.1)
 [![Backend Tests](https://img.shields.io/badge/Backend%20Tests-92%2F92%20PASS-brightgreen.svg)]()
-[![Browser QC](https://img.shields.io/badge/Browser%20QC-30%2F30%20PASS-success.svg)]()
+[![Browser QC](https://img.shields.io/badge/Browser%20QC-72%2F72%20PASS-success.svg)]()
 [![Java](https://img.shields.io/badge/Java-21%20LTS-orange.svg)]()
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-brightgreen.svg)]()
 [![Database](https://img.shields.io/badge/Database-MySQL%208.x-blue.svg)]()
@@ -14,11 +14,12 @@
 
 ## 📌 Release Information
 
-- **Version:** `v1.1.0`
-- **Status:** Release (Production-Ready Localhost Monolith)
+- **Version:** `v1.1.1`
+- **Status:** Release (Production-Ready Localhost Monolith & Docker/Render Ready)
 - **Backend Regression Suite:** 92/92 Tests Passing (100% PASS, 0 failures, 0 errors)
-- **Browser Quality Control:** 30/30 Headless Chrome Flows Passing (100% PASS)
+- **Browser Quality Control Suite:** 72/72 Headless Chrome Flows Passing (100% PASS, 0 console errors, 0 API failures)
 - **UI System:** Modern Glassmorphism Design System with persistent Light/Dark theme engine
+- **Utility Launchers:** 1-Click Server (`start.bat`), Shutdown (`stop.bat`), and Database Inspector (`DB.bat`)
 
 ---
 
@@ -31,7 +32,7 @@
 - **💧 Watering Event Logging:** Record deep watering events with observations and automatic recalculation of overdue/upcoming care alerts.
 - **📈 Growth Observation Logs:** Longitudinal tracking of plant height (cm), leaf counts, and qualitative health notes.
 - **📊 Real-Time Dashboard:** Overview of total plants, health status breakdown, overdue/due-today watering alerts, and upcoming 7-day care timeline.
-- **🛡️ Dedicated Admin Panel:** System-wide metrics, user directory monitoring, and category lifecycle management.
+- **🛡️ Dedicated Admin Panel:** System-wide metrics, user directory monitoring, and category lifecycle management with referential integrity safeguards.
 - **🎨 Glassmorphism & Theme Engine:** Modern frosted-glass aesthetic with persistent Light and Dark theme toggle saved in `localStorage`.
 - **📱 Responsive Layout:** Fully mobile, tablet, and desktop responsive with zero horizontal overflow.
 - **🔒 Ownership Isolation & Anti-Enumeration:** Strict tenant boundary enforcement; cross-user plant lookups return secure `404 Not Found`.
@@ -47,8 +48,9 @@
 | **Security** | Spring Security 6, BCrypt | Session authentication, role-based access control (USER, ADMIN), CSRF protection |
 | **Frontend** | Vanilla HTML5, CSS3, ES6+ JavaScript | Lightweight client architecture; native `fetch()` API with zero heavy framework overhead |
 | **Styling** | Glassmorphic CSS3, CSS Custom Properties | Frosted-glass backdrop filters, responsive grid, dynamic Light/Dark theme switching |
+| **Deployment** | Docker (Multi-stage Temurin JRE), Render | Cloud-ready containerization and web service blueprints |
 | **Build & Tooling** | Apache Maven 3.9+ | Dependency management, compilation, and automated test execution |
-| **Testing** | JUnit 5, MockMvc, AssertJ, Puppeteer Core | 92 backend integration/unit tests + 30 automated browser QC end-to-end flows |
+| **Testing** | JUnit 5, MockMvc, AssertJ, Puppeteer Core | 92 backend integration/unit tests + 72 automated browser QC end-to-end flows |
 
 ---
 
@@ -82,12 +84,9 @@ export ADMIN_PASSWORD="<your-admin-password>"
 
 ### 3. One-Click Launchers
 
-- **Start Application:** Double-click **`start.bat`** (or run `.\start.bat` in terminal). The server will compile, run database migrations, seed default categories, and start on port `8080`.
-- **Access Application:** Open your web browser and navigate to:
-  ```text
-  http://localhost:8080
-  ```
+- **Start Application:** Double-click **`start.bat`** (or run `.\start.bat` in terminal). The server will compile, run database migrations, seed default categories, wait for health readiness, and automatically launch your browser on port `8080`.
 - **Stop Application:** Double-click **`stop.bat`** (or run `.\stop.bat` in terminal) to gracefully shut down the port 8080 process.
+- **Inspect Database:** Double-click **`DB.bat`** (or run `.\DB.bat` in terminal) to view live table counts, registered users, and recent plant records without running destructive queries.
 
 ---
 
@@ -100,136 +99,88 @@ export ADMIN_PASSWORD="<your-admin-password>"
 
 ---
 
-## 📋 Realistic Demo Data (Copy-Paste Ready)
-
-Use these realistic sample values during viva presentations or live testing:
-
-### Add New Plant Demo Data
-| Field | Plant 1 (Money Plant) | Plant 2 (Snake Plant) | Plant 3 (Aloe Vera) | Plant 4 (Red Rose) |
-|---|---|---|---|---|
-| **Plant Name** | Money Plant | Snake Plant | Aloe Vera | Red Rose |
-| **Category** | Herb | Succulent | Succulent | Flowering |
-| **Health Status** | HEALTHY | HEALTHY | NEEDS_ATTENTION | HEALTHY |
-| **Interval (Days)** | 7 | 14 | 10 | 3 |
-| **Last Watered** | 2026-08-24 | 2026-08-20 | 2026-08-10 | 2026-08-25 |
-| **Species** | Epipremnum aureum | Sansevieria trifasciata | Aloe barbadensis miller | Rosa rubiginosa |
-| **Location** | Living Room Shelf | Bedroom Corner | Sunny Balcony Sill | Terrace Garden |
-| **Care Notes** | Indirect sunlight | Drought-tolerant air purifier | Lower leaves yellow; check drainage | Needs direct morning sun |
-
-### Update Care Schedule Demo Data
-| Plant | Watering Interval (Days) | Last Watered Date | Sunlight Needs | Fertilizing Interval (Days) |
-|---|:---:|:---:|---|:---:|
-| **Money Plant** | 7 | 2026-08-24 | Partial Sun (`PARTIAL_SUN`) | 30 |
-| **Snake Plant** | 14 | 2026-08-20 | Shade (`SHADE`) | 60 |
-| **Aloe Vera** | 10 | 2026-08-10 | Full Sun (`FULL_SUN`) | 45 |
-
-### Record Watering Event Demo Data
-| Target Plant | Watered Date | Notes |
-|---|:---:|---|
-| **Money Plant** | 2026-08-26 | Regular watering, cleaned leaves with soft wet cloth |
-| **Red Rose** | 2026-08-25 | Morning deep soak; added seaweed bio-fertilizer |
-| **Peace Lily** | 2026-08-26 | Watered after noticing gentle leaf droop; perked up in 2 hrs |
-
-### Record Growth Observation Demo Data
-| Target Plant | Observation Date | Height (cm) | Leaf Count | Observation Notes |
-|---|:---:|:---:|:---:|---|
-| **Money Plant** | 2026-08-26 | 32.5 | 14 | Two new vibrant green vines climbing up moss pole |
-| **Red Rose** | 2026-08-26 | 48.0 | 22 | Three fresh crimson buds formed at stem apex |
-| **Peace Lily** | 2026-08-25 | 28.2 | 9 | White spathe flower bloom fully open and glossy |
-
----
-
-## 🏗️ Architecture Overview
-
-PlantPal follows a clean **Monolithic MVC Architecture** designed for high reliability, minimal resource footprint, and zero cloud hosting cost:
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                 Client Browser Layer                        │
-│   Vanilla JS (ES6+ fetch) + HTML5 + Glassmorphism CSS3      │
-└──────────────────────────────▲──────────────────────────────┘
-                               │ HTTP / JSON (CSRF Protected)
-┌──────────────────────────────▼──────────────────────────────┐
-│             Spring Boot Web MVC & Security Layer            │
-│   AuthenticationFilter | CsrfFilter | 27 REST Endpoints     │
-└──────────────────────────────▲──────────────────────────────┘
-                               │
-┌──────────────────────────────▼──────────────────────────────┐
-│                    Service Business Layer                   │
-│   Care Scheduling Logic | Growth Tracking | Ownership Guard │
-└──────────────────────────────▲──────────────────────────────┘
-                               │
-┌──────────────────────────────▼──────────────────────────────┐
-│             Spring Data JPA / Hibernate Layer               │
-│   6 Repositories | Cascade Delete | Prepared Statements     │
-└──────────────────────────────▲──────────────────────────────┘
-                               │ JDBC
-┌──────────────────────────────▼──────────────────────────────┐
-│                      MySQL 8.x Database                     │
-│   users | plant_categories | plants | care_schedules        │
-│   watering_records | growth_records                         │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 📁 Repository Directory Structure
+## 📂 Repository Structure
 
 ```text
 007_PlantPal/
-├── Bin/                         # Archived/obsolete project-support scripts
-│   ├── .github_modernize/       # Modernization scripts retained for record
-│   └── README.md                # Bin directory documentation
-├── docs/                        # Technical specifications & architecture designs
-│   ├── API_DOCUMENTATION.md     # 27 REST API endpoints reference specification
-│   ├── DATABASE_DESIGN.md       # Relational schema, ERD, and SQL table structures
-│   ├── DECISIONS.md             # Architecture & technology decisions log
-│   ├── PROJECT_STATUS.md        # Milestone tracking & project phase history
-│   └── REQUIREMENTS.md          # Functional & non-functional requirements specification
+├── Bin/                       # Operational scripts & maintenance tools
+│   ├── README.md              # Bin utilities documentation
+│   └── .github_modernize/     # Git hooks and modernize scripts
+├── docs/                      # Architectural & Engineering Documentation
+│   ├── API_DOCUMENTATION.md   # Complete 27-endpoint REST contract reference
+│   ├── DATABASE_DESIGN.md     # 6-table relational schema and ER diagram
+│   ├── DECISIONS.md           # Architectural Decision Records (ADRs 1-13)
+│   ├── PROJECT_STATUS.md      # Milestones, verification metrics, and releases
+│   └── REQUIREMENTS.md        # Functional and non-functional requirements
 ├── src/
 │   ├── main/
-│   │   ├── java/com/plantpal/   # Spring Boot backend source code
-│   │   │   ├── config/          # Security, DataInitializer, WebMvc configs
-│   │   │   ├── controller/      # REST API controllers
-│   │   │   ├── dto/             # Request and Response transfer objects
-│   │   │   ├── entity/          # JPA entity domain models
-│   │   │   ├── enums/           # Domain enumerations (PlantStatus, Roles, etc.)
-│   │   │   ├── exception/       # Global exception handler & custom exceptions
-│   │   │   ├── repository/      # Spring Data JPA repositories
-│   │   │   └── service/         # Business logic services
+│   │   ├── java/com/plantpal/ # Spring Boot backend source code
+│   │   │   ├── config/        # Security, MVC, and Data Initializer
+│   │   │   ├── controller/    # 11 REST & Admin Controllers
+│   │   │   ├── dto/           # Request & Response Data Transfer Objects
+│   │   │   ├── entity/        # 6 JPA Database Entities
+│   │   │   ├── enums/         # Status & Role Enums
+│   │   │   ├── exception/     # Global Error Handling & Exceptions
+│   │   │   ├── repository/    # Spring Data JPA Repositories
+│   │   │   └── service/       # Business Logic & Validation Services
 │   │   └── resources/
-│   │       ├── application.properties
-│   │       └── static/          # Frontend templates & assets
-│   │           ├── css/         # plantpal.css (Glassmorphism & themes)
-│   │           ├── js/          # theme.js, auth.js
-│   │           ├── pages/       # HTML views (dashboard, plants, admin, etc.)
-│   │           └── index.html   # Landing page
-│   └── test/java/com/plantpal/  # 92 unit and integration test suite
-├── .gitignore                   # Git ignore configurations
-├── pom.xml                      # Maven project object model
-├── README.md                    # Project landing documentation
-├── start.bat                    # 1-Click Server launcher script
-├── std_guide.md                 # Student study & technical learning guide (Tanglish)
-├── stop.bat                     # 1-Click Server shutdown script
-└── viva_guide.md                # Rapid viva revision & demo checklist (Tanglish)
+│   │       ├── application.properties # Spring configuration
+│   │       └── static/        # Frontend Client Suite
+│   │           ├── css/       # plantpal.css (Glassmorphic theme system)
+│   │           ├── js/        # api.js, auth.js, theme.js
+│   │           ├── pages/     # HTML5 views (dashboard, plants, profile, admin)
+│   │           └── index.html # Landing page
+│   └── test/java/com/plantpal/# 92 Backend Unit & MockMvc Tests
+├── .gitignore                 # Strict ignore rules for artifacts & secrets
+├── DB.bat                     # 1-Click Local Database Inspector
+├── Dockerfile                 # Multi-stage production container build
+├── pom.xml                    # Maven build descriptor
+├── README.md                  # Master project presentation
+├── render.yaml                # Render cloud deployment blueprint
+├── start.bat                  # 1-Click Server Launcher with auto-browser opening
+├── std_guide.md               # Student Tanglish viva & learning guide
+├── stop.bat                   # 1-Click Server Termination
+└── viva_guide.md              # Comprehensive viva question & answer manual
 ```
 
 ---
 
-## 📚 Documentation Directory
+## 🧪 Testing & Quality Assurance
 
-Explore the detailed technical documentation located in [`docs/`](docs/):
+### 1. Backend Integration Tests (92 Tests)
+Run the complete backend test suite:
+```bash
+mvn clean test
+```
+- **92 Tests** covering all 27 REST endpoints, RBAC security, CSRF protection, cascade deletions, and database services.
 
-- 📖 [**API Documentation**](docs/API_DOCUMENTATION.md) — Comprehensive specification of all 27 REST API endpoints.
-- 🗄️ [**Database Design**](docs/DATABASE_DESIGN.md) — Schema definitions, table relationships, foreign key cascades, and indexing.
-- 📋 [**Requirements Specification**](docs/REQUIREMENTS.md) — Functional and non-functional requirements breakdown.
-- ⚖️ [**Architecture Decisions**](docs/DECISIONS.md) — Rationale behind architectural choices and technology selections.
-- 📈 [**Project Status**](docs/PROJECT_STATUS.md) — Detailed development milestones, implementation history, and progress logs.
-- 🎓 [**Student Learning Guide**](std_guide.md) — Student revision manual with architecture, security mechanisms, and ELI5 Tanglish explanations.
-- 🎯 [**Viva Voce Rapid Guide**](viva_guide.md) — 2-minute revision sheet, demonstration checklist, and Top 20 Q&A.
+### 2. Browser Smoke QC Automation (72 Flows)
+Run the headless Chrome Puppeteer QC suite covering 10 functional sections:
+```bash
+node scratch/qc-72-master.js
+```
+- **72 Flows Verified (100% PASS):** Public Landing, Authentication, Plant CRUD, Care Schedules, Watering Events, Growth Observations, Profile, Admin Panel, Error Handling & Mobile Responsive Layouts.
 
 ---
 
-## 📄 License
+## ☁️ Cloud & Docker Deployment
 
-Developed for academic and personal portfolio demonstration. Free for learning and educational use.
+### Docker Container Build
+```bash
+docker build -t plantpal:latest .
+docker run -p 8080:8080 -e DB_PASSWORD="<password>" -e ADMIN_PASSWORD="<admin_pass>" plantpal:latest
+```
+
+### Render Deployment
+PlantPal includes a production `render.yaml` blueprint:
+1. Connect your GitHub repository to [Render](https://render.com).
+2. Create a **Web Service** using Docker runtime.
+3. Configure the environment variables `DB_PASSWORD`, `ADMIN_PASSWORD`, and MySQL connection URL in Render Dashboard.
+4. Render will build using `Dockerfile` and execute health checks against `/api/health`.
+
+---
+
+## 📄 License & Attribution
+
+Developed as a Final-Year Java Full Stack Main Project (2026–2027) by **Hariharan P**.
+Licensed under the [MIT License](LICENSE).

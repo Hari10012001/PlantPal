@@ -235,3 +235,18 @@ $$\text{Browser (Vanilla JS + HTML5)} \longleftrightarrow \text{Spring Boot 3 RE
 
 ---
 **🌱 All the Best for your College Viva Voce! You are fully prepared.**
+
+---
+
+## 5. ONE-CLICK LAUNCHERS & UTILITIES (HOW TO DEMO)
+
+| Script | Purpose | ELI5 Explanation (Tanglish) |
+|---|---|---|
+| **`start.bat`** | 1-Click Server Launcher | Spring Boot server-ah background window-la start panni, port 8080 health check ready aana udaney browser-la automatic-aa `http://localhost:8080` open pannum. |
+| **`stop.bat`** | 1-Click Server Stopper | Port 8080-la run aagura Java backend process-ah safe-aa terminate pannum. |
+| **`DB.bat`** | 1-Click Database Inspector | Local MySQL database-la irukkura 6 tables, user count, plant count, and recent records-ah instant-aa terminal-la safe-aa display pannum without running destructive queries. |
+
+### How to use `DB.bat`:
+- `.\DB.bat` : Overall table counts and recent registered users display pannum.
+- `.\DB.bat tables` : All 6 database tables list pannum.
+- `.\DB.bat data` : Active plants and care schedules preview pannum.

@@ -198,3 +198,21 @@
 
 ---
 **🌱 All the Best for your Viva Voce! Confident-aa answer pannunga!**
+
+---
+
+## 8. AUTOMATION, DATABASE INSPECTION & DEPLOYMENT VIVA Q&A
+
+### Q21: What is `DB.bat` and why did you create it?
+**Answer:** `DB.bat` is a lightweight, one-click database inspector batch script. In college viva demonstrations or rapid debugging, opening MySQL Workbench or phpMyAdmin is slow. `DB.bat` connects to the local MySQL server using environment variables and executes non-destructive summary queries (`COUNT(*)`, table listing, and recent user inspection) in milliseconds with zero risk of data mutation.
+
+### Q22: How is PlantPal containerized and deployed to the cloud (Render)?
+**Answer:** PlantPal uses a multi-stage Docker build (`Dockerfile`):
+1. **Stage 1 (Build):** `maven:3.9.6-eclipse-temurin-21-alpine` compiles the source code and produces a production Spring Boot executable JAR.
+2. **Stage 2 (Runtime):** `eclipse-temurin:21-jre-alpine` provides a minimal, secure ~150MB JRE container running on port 8080.
+3. **Render Blueprint (`render.yaml`):** Configures the Docker Web Service on Render with automatic `/api/health` polling and environment variable injection for database credentials.
+
+### Q23: How do you prove your system works end-to-end without manual testing?
+**Answer:** PlantPal implements a two-tier testing strategy:
+1. **Tier 1 (Backend Regression):** 92 JUnit 5 and MockMvc tests covering controllers, RBAC authorization, and service validation.
+2. **Tier 2 (Browser QC Automation):** 72 automated Puppeteer flows in real headless Chrome covering theme switching, authentication, Plant CRUD, dynamic schedule recalculation, Admin stats, CSRF protection, and mobile responsiveness.
