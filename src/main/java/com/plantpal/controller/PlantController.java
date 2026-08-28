@@ -34,10 +34,12 @@ public class PlantController {
     @GetMapping
     public ResponseEntity<List<PlantResponse>> getMyPlants(
             @RequestParam(required = false) Long category,
+            @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) PlantStatus status,
             @RequestParam(required = false) String search) {
         User currentUser = authService.getAuthenticatedUser();
-        return ResponseEntity.ok(plantService.getUserPlants(currentUser.getId(), category, status, search));
+        Long filterCategory = (category != null) ? category : categoryId;
+        return ResponseEntity.ok(plantService.getUserPlants(currentUser.getId(), filterCategory, status, search));
     }
 
     @GetMapping("/{id}")

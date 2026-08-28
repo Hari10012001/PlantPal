@@ -184,7 +184,10 @@
 
             const params = new URLSearchParams();
             if (search) params.append('search', search);
-            if (categoryId) params.append('categoryId', categoryId);
+            if (categoryId) {
+                params.append('category', categoryId);
+                params.append('categoryId', categoryId);
+            }
             if (status) params.append('status', status);
 
             try {
