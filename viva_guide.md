@@ -1,4 +1,4 @@
-﻿# 🌱 PlantPal — Final Viva Quick Revision Guide
+# 🌱 PlantPal — Final Viva Quick Revision Guide
 ### Last-Minute Study & Demo Guide for College Viva | Language: Simple ELI5 Tanglish
 
 ---
@@ -192,9 +192,9 @@
 | **Backend** | Java 21 LTS, Spring Boot 3.2.5, Spring Data JPA / Hibernate, Spring Security 6 |
 | **Database** | MySQL 8.x (6 Relational Tables with Foreign Keys and CASCADE DELETE) |
 | **Security** | Session Cookies, BCrypt Password Hashing, CSRF (`X-XSRF-TOKEN`), RBAC, Anti-Enumeration (404) |
-| **API** | 27 Authoritative REST Endpoints + 1 Health Check Endpoint |
-| **Testing** | 92 Maven Backend Tests (100% PASS) + 30 Headless Chrome Puppeteer UI Flows (100% PASS) |
-| **Final Result** | Production-ready localhost monolith on port 8080 (Release Tag: `v1.1.0`) |
+| **API** | 27 Authoritative REST Endpoints + 1 Health Check Endpoint (`/api/health`) |
+| **Testing** | 92 Maven Backend Tests (100% PASS) + 72 Headless Chrome Browser QC Flows (164 Total Tests, 100% PASS) |
+| **Final Result** | Production-ready monolith on port 8080 (Release Tag: `v1.1.1`) |
 
 ---
 **🌱 All the Best for your Viva Voce! Confident-aa answer pannunga!**

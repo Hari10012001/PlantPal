@@ -1,4 +1,4 @@
-﻿# 🌱 PlantPal — A Personal Plant Care, Watering Schedule and Growth Monitoring Platform
+# 🌱 PlantPal — A Personal Plant Care, Watering Schedule and Growth Monitoring Platform
 
 [![Release](https://img.shields.io/badge/Release-v1.1.1-emerald.svg)](https://github.com/Hari10012001/PlantPal/releases/tag/v1.1.1)
 [![Backend Tests](https://img.shields.io/badge/Backend%20Tests-92%2F92%20PASS-brightgreen.svg)]()
@@ -86,7 +86,15 @@ export ADMIN_PASSWORD="<your-admin-password>"
 
 - **Start Application:** Double-click **`start.bat`** (or run `.\start.bat` in terminal). The server will compile, run database migrations, seed default categories, wait for health readiness, and automatically launch your browser on port `8080`.
 - **Stop Application:** Double-click **`stop.bat`** (or run `.\stop.bat` in terminal) to gracefully shut down the port 8080 process.
-- **Inspect Database:** Double-click **`DB.bat`** (or run `.\DB.bat` in terminal) to view live table counts, registered users, and recent plant records without running destructive queries.
+- **Inspect Database:** Double-click **`DB.bat`** (or run `.\DB.bat` in terminal) to inspect live database tables without running destructive queries.
+  - `.\DB.bat` — Overall record counts and recent users summary
+  - `.\DB.bat tables` — Lists all database tables
+  - `.\DB.bat data` — Shows plant care schedules and next watering calculations
+  - `.\DB.bat users` — Lists registered user directory and roles
+  - `.\DB.bat plants` — Lists all registered plants and owners
+  - `.\DB.bat categories` — Lists botanical plant categories
+  - `.\DB.bat watering` — Lists recent watering event logs
+  - `.\DB.bat growth` — Lists recent plant growth observation logs
 
 ---
 

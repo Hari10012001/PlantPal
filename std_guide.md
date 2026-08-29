@@ -1,4 +1,4 @@
-﻿# 🌱 PlantPal — Student Learning & Viva Preparation Guide
+# 🌱 PlantPal — Student Learning & Viva Preparation Guide
 ### Complete Reference Manual for College Viva | Language: Simple ELI5 Tanglish
 
 ---
@@ -230,8 +230,8 @@ $$\text{Browser (Vanilla JS + HTML5)} \longleftrightarrow \text{Spring Boot 3 RE
 | **Database** | MySQL 8.x (6 Relational Tables with Foreign Keys and CASCADE DELETE) |
 | **Security** | Session Cookies, BCrypt Password Hashing, CSRF (`X-XSRF-TOKEN`), RBAC, Anti-Enumeration (404) |
 | **API** | 27 Authoritative REST Endpoints + 1 Health Check Endpoint (`/api/health`) |
-| **Testing** | 92 Maven Backend Tests (100% PASS) + 30 Headless Chrome Puppeteer UI Flows (100% PASS) |
-| **Final Result** | Production-ready localhost monolith on port 8080 (Release Tag: `v1.1.0`) |
+| **Testing** | 92 Maven Backend Tests (100% PASS) + 72 Headless Chrome Browser QC Flows (164 Total Tests, 100% PASS) |
+| **Final Result** | Production-ready monolith on port 8080 (Release Tag: `v1.1.1`) |
 
 ---
 **🌱 All the Best for your College Viva Voce! You are fully prepared.**
@@ -247,6 +247,11 @@ $$\text{Browser (Vanilla JS + HTML5)} \longleftrightarrow \text{Spring Boot 3 RE
 | **`DB.bat`** | 1-Click Database Inspector | Local MySQL database-la irukkura 6 tables, user count, plant count, and recent records-ah instant-aa terminal-la safe-aa display pannum without running destructive queries. |
 
 ### How to use `DB.bat`:
-- `.\DB.bat` : Overall table counts and recent registered users display pannum.
+- `.\DB.bat` : Overall table record counts and recent registered users display pannum.
 - `.\DB.bat tables` : All 6 database tables list pannum.
 - `.\DB.bat data` : Active plants and care schedules preview pannum.
+- `.\DB.bat users` : Registered users and roles audit table display pannum.
+- `.\DB.bat plants` : Complete plants list with owner emails display pannum.
+- `.\DB.bat categories` : Admin botanical plant categories list pannum.
+- `.\DB.bat watering` : Recent watering event logs display pannum.
+- `.\DB.bat growth` : Recent plant height and leaf count observations display pannum.

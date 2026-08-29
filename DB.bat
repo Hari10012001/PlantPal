@@ -54,6 +54,15 @@ if "%1"=="" goto SHOW_SUMMARY
 if /I "%1"=="status" goto SHOW_SUMMARY
 if /I "%1"=="tables" goto SHOW_TABLES
 if /I "%1"=="data" goto SHOW_DATA
+if /I "%1"=="users" goto SHOW_USERS
+if /I "%1"=="plants" goto SHOW_PLANTS
+if /I "%1"=="categories" goto SHOW_CATEGORIES
+if /I "%1"=="watering" goto SHOW_WATERING
+if /I "%1"=="growth" goto SHOW_GROWTH
+
+echo [ERROR] Unknown option '%1'.
+echo.
+goto SHOW_USAGE
 
 :SHOW_SUMMARY
 echo [2/3] Database Overview and Record Counts:
@@ -64,14 +73,7 @@ echo [3/3] Recent Registered Users:
 echo -------------------------------------------------------------------------
 "%MYSQL_CMD%" -u %DB_USER% -p%DB_PASS% %DB_NAME% -e "SELECT id, full_name, email, role, created_at FROM users ORDER BY id DESC LIMIT 5;"
 echo.
-echo =========================================================================
-echo Usage Options:
-echo   DB.bat          - Shows summary record counts and users
-echo   DB.bat tables   - Lists all table schemas
-echo   DB.bat data     - Shows recent plant care records
-echo =========================================================================
-echo.
-exit /b 0
+goto SHOW_USAGE
 
 :SHOW_TABLES
 echo [TABLE SCHEMAS] Showing tables in '%DB_NAME%':
@@ -84,5 +86,55 @@ exit /b 0
 echo [PLANTS AND CARE SCHEDULES]
 echo -------------------------------------------------------------------------
 "%MYSQL_CMD%" -u %DB_USER% -p%DB_PASS% %DB_NAME% -e "SELECT p.id, p.name, c.name AS category, p.plant_status, cs.watering_interval_days AS interval_days, cs.last_watered_date, DATE_ADD(cs.last_watered_date, INTERVAL cs.watering_interval_days DAY) AS next_water_due FROM plants p LEFT JOIN plant_categories c ON p.category_id = c.id LEFT JOIN care_schedules cs ON cs.plant_id = p.id LIMIT 10;"
+echo.
+exit /b 0
+
+:SHOW_USERS
+echo [USERS DIRECTORY]
+echo -------------------------------------------------------------------------
+"%MYSQL_CMD%" -u %DB_USER% -p%DB_PASS% %DB_NAME% -e "SELECT id, full_name, email, role, created_at FROM users ORDER BY id ASC;"
+echo.
+exit /b 0
+
+:SHOW_PLANTS
+echo [ALL PLANTS]
+echo -------------------------------------------------------------------------
+"%MYSQL_CMD%" -u %DB_USER% -p%DB_PASS% %DB_NAME% -e "SELECT p.id, p.name, p.species, c.name AS category, p.location, p.plant_status, u.email AS owner FROM plants p LEFT JOIN plant_categories c ON p.category_id = c.id LEFT JOIN users u ON p.user_id = u.id ORDER BY p.id ASC;"
+echo.
+exit /b 0
+
+:SHOW_CATEGORIES
+echo [PLANT CATEGORIES]
+echo -------------------------------------------------------------------------
+"%MYSQL_CMD%" -u %DB_USER% -p%DB_PASS% %DB_NAME% -e "SELECT id, name, description, created_at FROM plant_categories ORDER BY id ASC;"
+echo.
+exit /b 0
+
+:SHOW_WATERING
+echo [RECENT WATERING RECORDS]
+echo -------------------------------------------------------------------------
+"%MYSQL_CMD%" -u %DB_USER% -p%DB_PASS% %DB_NAME% -e "SELECT w.id, p.name AS plant_name, w.watered_date, w.notes, w.created_at FROM watering_records w LEFT JOIN plants p ON w.plant_id = p.id ORDER BY w.id DESC LIMIT 15;"
+echo.
+exit /b 0
+
+:SHOW_GROWTH
+echo [RECENT GROWTH OBSERVATIONS]
+echo -------------------------------------------------------------------------
+"%MYSQL_CMD%" -u %DB_USER% -p%DB_PASS% %DB_NAME% -e "SELECT g.id, p.name AS plant_name, g.record_date, g.height_cm, g.leaf_count, g.notes FROM growth_records g LEFT JOIN plants p ON g.plant_id = p.id ORDER BY g.id DESC LIMIT 15;"
+echo.
+exit /b 0
+
+:SHOW_USAGE
+echo =========================================================================
+echo Usage Options:
+echo   DB.bat              - Shows summary record counts and recent users
+echo   DB.bat tables       - Lists all database tables
+echo   DB.bat data         - Shows plant care schedules and next watering due
+echo   DB.bat users        - Lists all registered users and roles
+echo   DB.bat plants       - Lists all registered plants and owners
+echo   DB.bat categories   - Lists all plant categories
+echo   DB.bat watering     - Lists recent watering event logs
+echo   DB.bat growth       - Lists recent plant growth observation logs
+echo =========================================================================
 echo.
 exit /b 0
