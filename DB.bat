@@ -12,7 +12,8 @@ echo.
 set "DB_NAME=plantpal_db"
 set "DB_USER=root"
 if "%DB_PASSWORD%"=="" (
-    set "DB_PASS=Hari2025@"
+    echo [NOTICE] DB_PASSWORD environment variable is not set.
+    set /p "DB_PASS=Enter MySQL root password (or set DB_PASSWORD env var): "
 ) else (
     set "DB_PASS=%DB_PASSWORD%"
 )
@@ -82,6 +83,6 @@ exit /b 0
 :SHOW_DATA
 echo [PLANTS AND CARE SCHEDULES]
 echo -------------------------------------------------------------------------
-"%MYSQL_CMD%" -u %DB_USER% -p%DB_PASS% %DB_NAME% -e "SELECT p.id, p.name, c.name AS category, p.status, cs.watering_interval_days AS interval_days, cs.next_watering_date FROM plants p LEFT JOIN plant_categories c ON p.category_id = c.id LEFT JOIN care_schedules cs ON cs.plant_id = p.id LIMIT 10;"
+"%MYSQL_CMD%" -u %DB_USER% -p%DB_PASS% %DB_NAME% -e "SELECT p.id, p.name, c.name AS category, p.plant_status, cs.watering_interval_days AS interval_days, cs.last_watered_date, DATE_ADD(cs.last_watered_date, INTERVAL cs.watering_interval_days DAY) AS next_water_due FROM plants p LEFT JOIN plant_categories c ON p.category_id = c.id LEFT JOIN care_schedules cs ON cs.plant_id = p.id LIMIT 10;"
 echo.
 exit /b 0

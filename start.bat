@@ -10,8 +10,11 @@ echo =========================================================================
 echo.
 
 :: 1. Set Database & Admin Environment Variables
-if "%DB_PASSWORD%"=="" set "DB_PASSWORD=Hari2025@"
-if "%ADMIN_PASSWORD%"=="" set "ADMIN_PASSWORD=LiveAdminPassword@2026"
+if "%DB_PASSWORD%"=="" (
+    echo [NOTICE] DB_PASSWORD environment variable is not set.
+    set /p "DB_PASSWORD=Enter MySQL root password (or press Enter if blank): "
+)
+if "%ADMIN_PASSWORD%"=="" set "ADMIN_PASSWORD=AdminPass@2026"
 
 :: 2. Check Java
 echo [1/4] Checking Java environment...
