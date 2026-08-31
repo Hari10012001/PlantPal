@@ -28,6 +28,14 @@ class HealthControllerTest {
     }
 
     @Test
+    void testLightweightHealthEndpointReturnsUp() throws Exception {
+        mockMvc.perform(get("/health").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"))
+                .andExpect(jsonPath("$.application").value("PlantPal"));
+    }
+
+    @Test
     void testStaticRootReturnsOk() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk());

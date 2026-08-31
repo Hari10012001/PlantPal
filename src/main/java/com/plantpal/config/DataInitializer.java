@@ -68,8 +68,7 @@ public class DataInitializer implements CommandLineRunner {
         // 2. Seed approved 8 plant categories idempotently
         seedCategories();
 
-        logger.info(" Monolith running on port 8080                   ");
-        logger.info(" MySQL Connection Active: plantpal_db             ");
+        logger.info(" Database Initialized & Connected Successfully     ");
         logger.info("==================================================");
     }
 

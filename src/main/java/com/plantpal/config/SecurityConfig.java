@@ -76,7 +76,8 @@ public class SecurityConfig {
                 .ignoringRequestMatchers(
                     AntPathRequestMatcher.antMatcher("/api/auth/register"),
                     AntPathRequestMatcher.antMatcher("/api/auth/login"),
-                    AntPathRequestMatcher.antMatcher("/api/health")
+                    AntPathRequestMatcher.antMatcher("/api/health"),
+                    AntPathRequestMatcher.antMatcher("/health")
                 )
             )
             .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
@@ -95,6 +96,7 @@ public class SecurityConfig {
                     AntPathRequestMatcher.antMatcher("/js/**"),
                     AntPathRequestMatcher.antMatcher("/images/**"),
                     AntPathRequestMatcher.antMatcher("/api/health"),
+                    AntPathRequestMatcher.antMatcher("/health"),
                     AntPathRequestMatcher.antMatcher("/api/auth/register"),
                     AntPathRequestMatcher.antMatcher("/api/auth/login")
                 ).permitAll()
