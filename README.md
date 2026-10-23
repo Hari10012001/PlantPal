@@ -231,5 +231,5 @@ services:
 
 ## 📄 License & Attribution
 
-Developed as a Final-Year Java Full Stack Main Project (2026–2027) by **Hariharan P**.
+Developed by **Hariharan P**.
 Licensed under the [MIT License](LICENSE).
